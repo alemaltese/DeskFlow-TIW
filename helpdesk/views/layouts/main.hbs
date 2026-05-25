@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{title}} — Helpdesk</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="nav-brand">Helpdesk</a>
+      <div class="nav-links">
+        {{#if currentUser}}
+          {{#if isAdmin}}
+            <a href="/admin/dashboard">Dashboard</a>
+            <a href="/admin/tickets">Ticket</a>
+            <a href="/admin/utenti">Utenti</a>
+            <a href="/admin/stats">Statistiche</a>
+            <a href="/operatore/profilo">{{currentUser.name}}</a>
+          {{else}}
+            {{#if isOperatore}}
+              <a href="/operatore/dashboard">Dashboard</a>
+              <a href="/operatore/tickets">Ticket</a>
+              <a href="/operatore/stats">Statistiche</a>
+              <a href="/operatore/profilo">{{currentUser.name}}</a>
+            {{else}}
+              <a href="/tickets">I miei ticket</a>
+              <a href="/profilo">{{currentUser.name}}</a>
+            {{/if}}
+          {{/if}}
+          <a href="/logout">Esci</a>
+        {{else}}
+          <a href="/login">Accedi</a>
+          <a href="/register">Registrati</a>
+        {{/if}}
+      </div>
+    </div>
+  </nav>
+  <main class="container">
+    {{#if flash}}
+      <div class="flash flash-{{flash.type}}">{{flash.message}}</div>
+    {{/if}}
+    {{{body}}}
+  </main>
+</body>
+</html>

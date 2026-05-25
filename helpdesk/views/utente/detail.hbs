@@ -1,0 +1,150 @@
+{{!-- ── Header ── --}}
+<div class="card">
+  <div class="card-header">
+    <div>
+      <h1>{{ticket.title}}</h1>
+      <div style="display:flex; flex-wrap:wrap; gap:0.5rem; align-items:center; margin-top:0.5rem;">
+        <span class="badge badge-{{ticket.status}}">{{capitalize ticket.status}}</span>
+        <span class="badge badge-{{ticket.priority}}">{{capitalize ticket.priority}}</span>
+        <span class="text-muted">· {{capitalize ticket.category}}</span>
+        <span class="text-muted">· aperto il {{formatDate ticket.created_at}}</span>
+        {{#if ticket.operator_name}}
+          <span class="text-muted">· Operatore: <strong>{{ticket.operator_name}}</strong></span>
+        {{/if}}
+      </div>
+    </div>
+    <a href="/tickets" class="btn btn-secondary btn-sm" style="white-space:nowrap;">← I miei ticket</a>
+  </div>
+
+  <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:1rem 1.25rem; margin-top:0.5rem;">
+    <p style="color:#1e293b; white-space:pre-wrap;">{{ticket.description}}</p>
+  </div>
+</div>
+
+{{!-- ── Storico stati ── --}}
+{{#if history.length}}
+<div class="card">
+  <h2>Storico</h2>
+  <ul class="timeline">
+    {{#each history}}
+    <li class="timeline-item">
+      <span class="timeline-dot dot-{{this.new_status}}"></span>
+      <div class="timeline-content">
+        {{#if this.old_status}}
+          <strong>{{this.changed_by_name}}</strong> ha cambiato lo stato
+          da <em>{{this.old_status}}</em> a <em>{{this.new_status}}</em>
+        {{else}}
+          <strong>{{this.changed_by_name}}</strong> ha aperto il ticket
+          con stato <em>{{this.new_status}}</em>
+        {{/if}}
+        <div class="timeline-meta">{{formatDate this.created_at}}</div>
+      </div>
+    </li>
+    {{/each}}
+  </ul>
+</div>
+{{/if}}
+
+{{!-- ── Conversazione ── --}}
+<div class="card">
+  <h2>Conversazione</h2>
+
+  {{#if comments.length}}
+  <div class="comment-container">
+    {{#each comments}}
+    <div class="comment {{#if this.isOwn}}comment-own{{else}}comment-other{{/if}}">
+      <div class="comment-header">
+        <strong>{{this.author_name}}</strong>
+        <span>{{formatDate this.created_at}}</span>
+      </div>
+      <div class="comment-body">{{this.content}}</div>
+    </div>
+    {{/each}}
+  </div>
+  {{else}}
+  <p class="text-muted">Nessun messaggio ancora. Scrivi qui sotto se hai aggiornamenti.</p>
+  {{/if}}
+
+  {{#if canComment}}
+  <form action="/tickets/{{ticket.id}}/comments" method="POST" style="margin-top:1.5rem;">
+    <label for="content">Aggiungi un messaggio</label>
+    <textarea
+      id="content"
+      name="content"
+      rows="3"
+      maxlength="1000"
+      placeholder="Scrivi qui il tuo messaggio per il supporto..."
+      required
+    ></textarea>
+    <div style="margin-top:0.75rem;">
+      <button type="submit" class="btn btn-primary">Invia messaggio</button>
+    </div>
+  </form>
+  {{/if}}
+</div>
+
+{{!-- ── Chiudi ticket con valutazione ── --}}
+{{#if canClose}}
+<div class="card">
+  <h2>Il tuo problema è stato risolto?</h2>
+  <p class="text-muted" style="margin-bottom:1.25rem;">
+    Puoi chiudere il ticket e lasciare una valutazione opzionale per aiutarci a migliorare.
+  </p>
+  <form action="/tickets/{{ticket.id}}/chiudi" method="POST">
+    <div class="form-group">
+      <label>Valutazione (opzionale)</label>
+      <div class="star-input">
+        <input type="radio" name="score" id="s5" value="5">
+        <label for="s5" title="Eccellente">★</label>
+        <input type="radio" name="score" id="s4" value="4">
+        <label for="s4" title="Buono">★</label>
+        <input type="radio" name="score" id="s3" value="3">
+        <label for="s3" title="Nella media">★</label>
+        <input type="radio" name="score" id="s2" value="2">
+        <label for="s2" title="Scarso">★</label>
+        <input type="radio" name="score" id="s1" value="1">
+        <label for="s1" title="Pessimo">★</label>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="note">Nota (opzionale)</label>
+      <textarea
+        id="note"
+        name="note"
+        rows="2"
+        maxlength="500"
+        placeholder="Hai commenti sul servizio ricevuto?"
+      ></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Chiudi ticket</button>
+  </form>
+</div>
+{{/if}}
+
+{{!-- ── Riapri ticket ── --}}
+{{#if canReopen}}
+<div class="card" style="display:flex; align-items:center; justify-content:space-between; gap:1rem;">
+  <div>
+    <h3>Il problema si è ripresentato?</h3>
+    <p class="text-muted">Puoi riaprire questo ticket per chiedere ulteriore assistenza.</p>
+  </div>
+  <form action="/tickets/{{ticket.id}}/riapri" method="POST">
+    <button type="submit" class="btn btn-secondary">Riapri ticket</button>
+  </form>
+</div>
+{{/if}}
+
+{{!-- ── Valutazione ricevuta ── --}}
+{{#if rating}}
+<div class="card">
+  <h3>La tua valutazione</h3>
+  <div class="stars" style="font-size:1.5rem; margin-top:0.4rem;">
+    {{#each rating.starsArr}}
+      {{#if this.filled}}★{{else}}<span class="star-empty">★</span>{{/if}}
+    {{/each}}
+  </div>
+  {{#if rating.note}}
+  <p style="margin-top:0.5rem; color:#475569;">"{{rating.note}}"</p>
+  {{/if}}
+</div>
+{{/if}}

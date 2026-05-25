@@ -1,0 +1,42 @@
+{
+  "C:\\Users\\aless\\Desktop\\TIW\\DeskFlow-TIW\\helpdesk\\package.json": {
+    "mtime": 1779737380.8287318,
+    "ast_hash": "7237d5f8a9b27994f678517c864eb2ad",
+    "semantic_hash": "7237d5f8a9b27994f678517c864eb2ad"
+  },
+  "C:\\Users\\aless\\Desktop\\TIW\\DeskFlow-TIW\\helpdesk\\src\\server.js": {
+    "mtime": 1779739504.670515,
+    "ast_hash": "b9b1e8b57426d50d72f7e2962dc9d294",
+    "semantic_hash": "b9b1e8b57426d50d72f7e2962dc9d294"
+  },
+  "C:\\Users\\aless\\Desktop\\TIW\\DeskFlow-TIW\\helpdesk\\src\\db\\db.js": {
+    "mtime": 1779738349.8201077,
+    "ast_hash": "82300f8e20082ef79947936b43ef1bc6",
+    "semantic_hash": "82300f8e20082ef79947936b43ef1bc6"
+  },
+  "C:\\Users\\aless\\Desktop\\TIW\\DeskFlow-TIW\\helpdesk\\src\\db\\init.js": {
+    "mtime": 1779738346.9770951,
+    "ast_hash": "7eb5f23e4a48dc2eb4a1ffed1990de83",
+    "semantic_hash": "7eb5f23e4a48dc2eb4a1ffed1990de83"
+  },
+  "C:\\Users\\aless\\Desktop\\TIW\\DeskFlow-TIW\\helpdesk\\src\\db\\seed.js": {
+    "mtime": 1779738412.845254,
+    "ast_hash": "5c8de77825960b57f535374003f4fde6",
+    "semantic_hash": "5c8de77825960b57f535374003f4fde6"
+  },
+  "C:\\Users\\aless\\Desktop\\TIW\\DeskFlow-TIW\\helpdesk\\src\\middleware\\auth.js": {
+    "mtime": 1779738948.866133,
+    "ast_hash": "b6b6b1639d6660c76923e64b3d241bec",
+    "semantic_hash": "b6b6b1639d6660c76923e64b3d241bec"
+  },
+  "C:\\Users\\aless\\Desktop\\TIW\\DeskFlow-TIW\\helpdesk\\src\\routes\\operatore.js": {
+    "mtime": 1779739394.1675546,
+    "ast_hash": "25ae84ff804af4ba13107c86733744cb",
+    "semantic_hash": "25ae84ff804af4ba13107c86733744cb"
+  },
+  "C:\\Users\\aless\\Desktop\\TIW\\DeskFlow-TIW\\helpdesk\\src\\routes\\tickets.js": {
+    "mtime": 1779738983.611761,
+    "ast_hash": "5ed6ccd7b041d1845d21429d46bb945c",
+    "semantic_hash": "5ed6ccd7b041d1845d21429d46bb945c"
+  }
+}

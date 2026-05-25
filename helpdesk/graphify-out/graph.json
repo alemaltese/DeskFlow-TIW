@@ -1,0 +1,1823 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "label": "package.json",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L1",
+      "id": "package_json",
+      "community": 2,
+      "norm_label": "package.json"
+    },
+    {
+      "label": "name",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L2",
+      "id": "helpdesk_package_name",
+      "community": 2,
+      "norm_label": "name"
+    },
+    {
+      "label": "version",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L3",
+      "id": "helpdesk_package_version",
+      "community": 2,
+      "norm_label": "version"
+    },
+    {
+      "label": "type",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L4",
+      "id": "helpdesk_package_type",
+      "community": 2,
+      "norm_label": "type"
+    },
+    {
+      "label": "main",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L5",
+      "id": "helpdesk_package_main",
+      "community": 2,
+      "norm_label": "main"
+    },
+    {
+      "label": "scripts",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L6",
+      "id": "helpdesk_package_scripts",
+      "community": 6,
+      "norm_label": "scripts"
+    },
+    {
+      "label": "start",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L7",
+      "id": "helpdesk_package_scripts_start",
+      "community": 6,
+      "norm_label": "start"
+    },
+    {
+      "label": "dev",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L8",
+      "id": "helpdesk_package_scripts_dev",
+      "community": 6,
+      "norm_label": "dev"
+    },
+    {
+      "label": "db:init",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L9",
+      "id": "helpdesk_package_scripts_db_init",
+      "community": 6,
+      "norm_label": "db:init"
+    },
+    {
+      "label": "seed",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L10",
+      "id": "helpdesk_package_scripts_seed",
+      "community": 6,
+      "norm_label": "seed"
+    },
+    {
+      "label": "dependencies",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L12",
+      "id": "helpdesk_package_dependencies",
+      "community": 2,
+      "norm_label": "dependencies"
+    },
+    {
+      "label": "express",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L13",
+      "id": "helpdesk_package_dependencies_express",
+      "community": 2,
+      "norm_label": "express"
+    },
+    {
+      "label": "express-handlebars",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L14",
+      "id": "helpdesk_package_dependencies_express_handlebars",
+      "community": 2,
+      "norm_label": "express-handlebars"
+    },
+    {
+      "label": "express-session",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L15",
+      "id": "helpdesk_package_dependencies_express_session",
+      "community": 2,
+      "norm_label": "express-session"
+    },
+    {
+      "label": "better-sqlite3",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L16",
+      "id": "helpdesk_package_dependencies_better_sqlite3",
+      "community": 2,
+      "norm_label": "better-sqlite3"
+    },
+    {
+      "label": "bcrypt",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L17",
+      "id": "helpdesk_package_dependencies_bcrypt",
+      "community": 2,
+      "norm_label": "bcrypt"
+    },
+    {
+      "label": "engines",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L19",
+      "id": "helpdesk_package_engines",
+      "community": 2,
+      "norm_label": "engines"
+    },
+    {
+      "label": "node",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L20",
+      "id": "helpdesk_package_engines_node",
+      "community": 2,
+      "norm_label": "node"
+    },
+    {
+      "label": "server.js",
+      "file_type": "code",
+      "source_file": "src/server.js",
+      "source_location": "L1",
+      "id": "src_server_js",
+      "community": 3,
+      "norm_label": "server.js"
+    },
+    {
+      "label": "express",
+      "file_type": "code",
+      "source_file": "src/server.js",
+      "source_location": "L2",
+      "id": "src_server_express",
+      "community": 3,
+      "norm_label": "express"
+    },
+    {
+      "label": "{ engine }",
+      "file_type": "code",
+      "source_file": "src/server.js",
+      "source_location": "L3",
+      "id": "src_server_engine",
+      "community": 3,
+      "norm_label": "{ engine }"
+    },
+    {
+      "label": "session",
+      "file_type": "code",
+      "source_file": "src/server.js",
+      "source_location": "L4",
+      "id": "src_server_session",
+      "community": 3,
+      "norm_label": "session"
+    },
+    {
+      "label": "path",
+      "file_type": "code",
+      "source_file": "src/server.js",
+      "source_location": "L5",
+      "id": "src_server_path",
+      "community": 3,
+      "norm_label": "path"
+    },
+    {
+      "label": "ticketsRouter",
+      "file_type": "code",
+      "source_file": "src/server.js",
+      "source_location": "L9",
+      "id": "src_server_ticketsrouter",
+      "community": 3,
+      "norm_label": "ticketsrouter"
+    },
+    {
+      "label": "operatoreRouter",
+      "file_type": "code",
+      "source_file": "src/server.js",
+      "source_location": "L10",
+      "id": "src_server_operatorerouter",
+      "community": 3,
+      "norm_label": "operatorerouter"
+    },
+    {
+      "label": "app",
+      "file_type": "code",
+      "source_file": "src/server.js",
+      "source_location": "L12",
+      "id": "src_server_app",
+      "community": 3,
+      "norm_label": "app"
+    },
+    {
+      "label": "formatDate()",
+      "file_type": "code",
+      "source_file": "src/server.js",
+      "source_location": "L20",
+      "id": "src_server_formatdate",
+      "community": 3,
+      "norm_label": "formatdate()"
+    },
+    {
+      "label": "eq()",
+      "file_type": "code",
+      "source_file": "src/server.js",
+      "source_location": "L30",
+      "id": "src_server_eq",
+      "community": 3,
+      "norm_label": "eq()"
+    },
+    {
+      "label": "capitalize()",
+      "file_type": "code",
+      "source_file": "src/server.js",
+      "source_location": "L31",
+      "id": "src_server_capitalize",
+      "community": 3,
+      "norm_label": "capitalize()"
+    },
+    {
+      "label": "db.js",
+      "file_type": "code",
+      "source_file": "src/db/db.js",
+      "source_location": "L1",
+      "id": "src_db_db_js",
+      "community": 7,
+      "norm_label": "db.js"
+    },
+    {
+      "label": "Database",
+      "file_type": "code",
+      "source_file": "src/db/db.js",
+      "source_location": "L2",
+      "id": "db_db_database",
+      "community": 7,
+      "norm_label": "database"
+    },
+    {
+      "label": "path",
+      "file_type": "code",
+      "source_file": "src/db/db.js",
+      "source_location": "L3",
+      "id": "db_db_path",
+      "community": 7,
+      "norm_label": "path"
+    },
+    {
+      "label": "db",
+      "file_type": "code",
+      "source_file": "src/db/db.js",
+      "source_location": "L5",
+      "id": "db_db_db",
+      "community": 7,
+      "norm_label": "db"
+    },
+    {
+      "label": "init.js",
+      "file_type": "code",
+      "source_file": "src/db/init.js",
+      "source_location": "L1",
+      "id": "src_db_init_js",
+      "community": 4,
+      "norm_label": "init.js"
+    },
+    {
+      "label": "Database",
+      "file_type": "code",
+      "source_file": "src/db/init.js",
+      "source_location": "L2",
+      "id": "db_init_database",
+      "community": 4,
+      "norm_label": "database"
+    },
+    {
+      "label": "path",
+      "file_type": "code",
+      "source_file": "src/db/init.js",
+      "source_location": "L3",
+      "id": "db_init_path",
+      "community": 4,
+      "norm_label": "path"
+    },
+    {
+      "label": "fs",
+      "file_type": "code",
+      "source_file": "src/db/init.js",
+      "source_location": "L4",
+      "id": "db_init_fs",
+      "community": 4,
+      "norm_label": "fs"
+    },
+    {
+      "label": "dataDir",
+      "file_type": "code",
+      "source_file": "src/db/init.js",
+      "source_location": "L6",
+      "id": "db_init_datadir",
+      "community": 4,
+      "norm_label": "datadir"
+    },
+    {
+      "label": "db",
+      "file_type": "code",
+      "source_file": "src/db/init.js",
+      "source_location": "L9",
+      "id": "db_init_db",
+      "community": 4,
+      "norm_label": "db"
+    },
+    {
+      "label": "createTables",
+      "file_type": "code",
+      "source_file": "src/db/init.js",
+      "source_location": "L12",
+      "id": "db_init_createtables",
+      "community": 4,
+      "norm_label": "createtables"
+    },
+    {
+      "label": "seed.js",
+      "file_type": "code",
+      "source_file": "src/db/seed.js",
+      "source_location": "L1",
+      "id": "src_db_seed_js",
+      "community": 5,
+      "norm_label": "seed.js"
+    },
+    {
+      "label": "Database",
+      "file_type": "code",
+      "source_file": "src/db/seed.js",
+      "source_location": "L2",
+      "id": "db_seed_database",
+      "community": 5,
+      "norm_label": "database"
+    },
+    {
+      "label": "path",
+      "file_type": "code",
+      "source_file": "src/db/seed.js",
+      "source_location": "L3",
+      "id": "db_seed_path",
+      "community": 5,
+      "norm_label": "path"
+    },
+    {
+      "label": "bcrypt",
+      "file_type": "code",
+      "source_file": "src/db/seed.js",
+      "source_location": "L4",
+      "id": "db_seed_bcrypt",
+      "community": 5,
+      "norm_label": "bcrypt"
+    },
+    {
+      "label": "db",
+      "file_type": "code",
+      "source_file": "src/db/seed.js",
+      "source_location": "L6",
+      "id": "db_seed_db",
+      "community": 5,
+      "norm_label": "db"
+    },
+    {
+      "label": "hash()",
+      "file_type": "code",
+      "source_file": "src/db/seed.js",
+      "source_location": "L10",
+      "id": "db_seed_hash",
+      "community": 5,
+      "norm_label": "hash()"
+    },
+    {
+      "label": "seed",
+      "file_type": "code",
+      "source_file": "src/db/seed.js",
+      "source_location": "L13",
+      "id": "db_seed_seed",
+      "community": 5,
+      "norm_label": "seed"
+    },
+    {
+      "label": "auth.js",
+      "file_type": "code",
+      "source_file": "src/middleware/auth.js",
+      "source_location": "L1",
+      "id": "src_middleware_auth_js",
+      "community": 8,
+      "norm_label": "auth.js"
+    },
+    {
+      "label": "requireUtente()",
+      "file_type": "code",
+      "source_file": "src/middleware/auth.js",
+      "source_location": "L3",
+      "id": "middleware_auth_requireutente",
+      "community": 8,
+      "norm_label": "requireutente()"
+    },
+    {
+      "label": "requireOperatore()",
+      "file_type": "code",
+      "source_file": "src/middleware/auth.js",
+      "source_location": "L11",
+      "id": "middleware_auth_requireoperatore",
+      "community": 8,
+      "norm_label": "requireoperatore()"
+    },
+    {
+      "label": "requireAdmin()",
+      "file_type": "code",
+      "source_file": "src/middleware/auth.js",
+      "source_location": "L19",
+      "id": "middleware_auth_requireadmin",
+      "community": 8,
+      "norm_label": "requireadmin()"
+    },
+    {
+      "label": "operatore.js",
+      "file_type": "code",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L1",
+      "id": "src_routes_operatore_js",
+      "community": 0,
+      "norm_label": "operatore.js"
+    },
+    {
+      "label": "express",
+      "file_type": "code",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L2",
+      "id": "routes_operatore_express",
+      "community": 0,
+      "norm_label": "express"
+    },
+    {
+      "label": "bcrypt",
+      "file_type": "code",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L3",
+      "id": "routes_operatore_bcrypt",
+      "community": 0,
+      "norm_label": "bcrypt"
+    },
+    {
+      "label": "db",
+      "file_type": "code",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L4",
+      "id": "routes_operatore_db",
+      "community": 0,
+      "norm_label": "db"
+    },
+    {
+      "label": "{ requireOperatore }",
+      "file_type": "code",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L5",
+      "id": "routes_operatore_requireoperatore",
+      "community": 0,
+      "norm_label": "{ requireoperatore }"
+    },
+    {
+      "label": "router",
+      "file_type": "code",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L7",
+      "id": "routes_operatore_router",
+      "community": 0,
+      "norm_label": "router"
+    },
+    {
+      "label": "VALID_STATUS",
+      "file_type": "code",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L9",
+      "id": "routes_operatore_valid_status",
+      "community": 0,
+      "norm_label": "valid_status"
+    },
+    {
+      "label": "VALID_PRIORITY",
+      "file_type": "code",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L10",
+      "id": "routes_operatore_valid_priority",
+      "community": 0,
+      "norm_label": "valid_priority"
+    },
+    {
+      "label": "VALID_CATEGORY",
+      "file_type": "code",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L11",
+      "id": "routes_operatore_valid_category",
+      "community": 0,
+      "norm_label": "valid_category"
+    },
+    {
+      "label": "statusRows",
+      "file_type": "code",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L24",
+      "id": "routes_operatore_statusrows",
+      "community": 0,
+      "norm_label": "statusrows"
+    },
+    {
+      "label": "counts",
+      "file_type": "code",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L27",
+      "id": "routes_operatore_counts",
+      "community": 0,
+      "norm_label": "counts"
+    },
+    {
+      "label": "activeTickets",
+      "file_type": "code",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L31",
+      "id": "routes_operatore_activetickets",
+      "community": 0,
+      "norm_label": "activetickets"
+    },
+    {
+      "label": "avgRow",
+      "file_type": "code",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L48",
+      "id": "routes_operatore_avgrow",
+      "community": 0,
+      "norm_label": "avgrow"
+    },
+    {
+      "label": "conditions",
+      "file_type": "code",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L71",
+      "id": "routes_operatore_conditions",
+      "community": 0,
+      "norm_label": "conditions"
+    },
+    {
+      "label": "params",
+      "file_type": "code",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L72",
+      "id": "routes_operatore_params",
+      "community": 0,
+      "norm_label": "params"
+    },
+    {
+      "label": "tickets",
+      "file_type": "code",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L89",
+      "id": "routes_operatore_tickets",
+      "community": 0,
+      "norm_label": "tickets"
+    },
+    {
+      "label": "ticketId",
+      "file_type": "code",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L107",
+      "id": "routes_operatore_ticketid",
+      "community": 0,
+      "norm_label": "ticketid"
+    },
+    {
+      "label": "ticket",
+      "file_type": "code",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L110",
+      "id": "routes_operatore_ticket",
+      "community": 0,
+      "norm_label": "ticket"
+    },
+    {
+      "label": "comments",
+      "file_type": "code",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L123",
+      "id": "routes_operatore_comments",
+      "community": 0,
+      "norm_label": "comments"
+    },
+    {
+      "label": "history",
+      "file_type": "code",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L134",
+      "id": "routes_operatore_history",
+      "community": 0,
+      "norm_label": "history"
+    },
+    {
+      "label": "rating",
+      "file_type": "code",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L142",
+      "id": "routes_operatore_rating",
+      "community": 0,
+      "norm_label": "rating"
+    },
+    {
+      "label": "now",
+      "file_type": "code",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L176",
+      "id": "routes_operatore_now",
+      "community": 0,
+      "norm_label": "now"
+    },
+    {
+      "label": "existing",
+      "file_type": "code",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L230",
+      "id": "routes_operatore_existing",
+      "community": 0,
+      "norm_label": "existing"
+    },
+    {
+      "label": "dbUser",
+      "file_type": "code",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L249",
+      "id": "routes_operatore_dbuser",
+      "community": 0,
+      "norm_label": "dbuser"
+    },
+    {
+      "label": "tickets.js",
+      "file_type": "code",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L1",
+      "id": "src_routes_tickets_js",
+      "community": 1,
+      "norm_label": "tickets.js"
+    },
+    {
+      "label": "express",
+      "file_type": "code",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L2",
+      "id": "routes_tickets_express",
+      "community": 1,
+      "norm_label": "express"
+    },
+    {
+      "label": "bcrypt",
+      "file_type": "code",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L3",
+      "id": "routes_tickets_bcrypt",
+      "community": 1,
+      "norm_label": "bcrypt"
+    },
+    {
+      "label": "db",
+      "file_type": "code",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L4",
+      "id": "routes_tickets_db",
+      "community": 1,
+      "norm_label": "db"
+    },
+    {
+      "label": "{ requireUtente }",
+      "file_type": "code",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L5",
+      "id": "routes_tickets_requireutente",
+      "community": 1,
+      "norm_label": "{ requireutente }"
+    },
+    {
+      "label": "router",
+      "file_type": "code",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L7",
+      "id": "routes_tickets_router",
+      "community": 1,
+      "norm_label": "router"
+    },
+    {
+      "label": "CATEGORIES",
+      "file_type": "code",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L9",
+      "id": "routes_tickets_categories",
+      "community": 1,
+      "norm_label": "categories"
+    },
+    {
+      "label": "PRIORITIES",
+      "file_type": "code",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L10",
+      "id": "routes_tickets_priorities",
+      "community": 1,
+      "norm_label": "priorities"
+    },
+    {
+      "label": "tickets",
+      "file_type": "code",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L14",
+      "id": "routes_tickets_tickets",
+      "community": 1,
+      "norm_label": "tickets"
+    },
+    {
+      "label": "errors",
+      "file_type": "code",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L35",
+      "id": "routes_tickets_errors",
+      "community": 1,
+      "norm_label": "errors"
+    },
+    {
+      "label": "result",
+      "file_type": "code",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L56",
+      "id": "routes_tickets_result",
+      "community": 1,
+      "norm_label": "result"
+    },
+    {
+      "label": "ticketId",
+      "file_type": "code",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L72",
+      "id": "routes_tickets_ticketid",
+      "community": 1,
+      "norm_label": "ticketid"
+    },
+    {
+      "label": "ticket",
+      "file_type": "code",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L75",
+      "id": "routes_tickets_ticket",
+      "community": 1,
+      "norm_label": "ticket"
+    },
+    {
+      "label": "comments",
+      "file_type": "code",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L88",
+      "id": "routes_tickets_comments",
+      "community": 1,
+      "norm_label": "comments"
+    },
+    {
+      "label": "history",
+      "file_type": "code",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L96",
+      "id": "routes_tickets_history",
+      "community": 1,
+      "norm_label": "history"
+    },
+    {
+      "label": "rating",
+      "file_type": "code",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L104",
+      "id": "routes_tickets_rating",
+      "community": 1,
+      "norm_label": "rating"
+    },
+    {
+      "label": "now",
+      "file_type": "code",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L163",
+      "id": "routes_tickets_now",
+      "community": 1,
+      "norm_label": "now"
+    },
+    {
+      "label": "score",
+      "file_type": "code",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L171",
+      "id": "routes_tickets_score",
+      "community": 1,
+      "norm_label": "score"
+    },
+    {
+      "label": "existing",
+      "file_type": "code",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L226",
+      "id": "routes_tickets_existing",
+      "community": 1,
+      "norm_label": "existing"
+    },
+    {
+      "label": "dbUser",
+      "file_type": "code",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L246",
+      "id": "routes_tickets_dbuser",
+      "community": 1,
+      "norm_label": "dbuser"
+    }
+  ],
+  "links": [
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "package_json",
+      "target": "helpdesk_package_name",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "package_json",
+      "target": "helpdesk_package_version",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "package_json",
+      "target": "helpdesk_package_type",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "package_json",
+      "target": "helpdesk_package_main",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "package_json",
+      "target": "helpdesk_package_scripts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "package_json",
+      "target": "helpdesk_package_dependencies",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "package_json",
+      "target": "helpdesk_package_engines",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "helpdesk_package_scripts",
+      "target": "helpdesk_package_scripts_start",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "helpdesk_package_scripts",
+      "target": "helpdesk_package_scripts_dev",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "helpdesk_package_scripts",
+      "target": "helpdesk_package_scripts_db_init",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "helpdesk_package_scripts",
+      "target": "helpdesk_package_scripts_seed",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "helpdesk_package_dependencies",
+      "target": "helpdesk_package_dependencies_express",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "helpdesk_package_dependencies",
+      "target": "helpdesk_package_dependencies_express_handlebars",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "helpdesk_package_dependencies",
+      "target": "helpdesk_package_dependencies_express_session",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "helpdesk_package_dependencies",
+      "target": "helpdesk_package_dependencies_better_sqlite3",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "helpdesk_package_dependencies",
+      "target": "helpdesk_package_dependencies_bcrypt",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "helpdesk_package_engines",
+      "target": "helpdesk_package_engines_node",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server.js",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_server_js",
+      "target": "src_server_express",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_server_js",
+      "target": "src_server_engine",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server.js",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "src_server_js",
+      "target": "src_server_session",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server.js",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "src_server_js",
+      "target": "src_server_path",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server.js",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "src_server_js",
+      "target": "src_routes_tickets_js",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server.js",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "src_server_js",
+      "target": "src_server_ticketsrouter",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server.js",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "src_server_js",
+      "target": "src_routes_operatore_js",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server.js",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "src_server_js",
+      "target": "src_server_operatorerouter",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server.js",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "src_server_js",
+      "target": "src_server_app",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server.js",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "src_server_js",
+      "target": "src_server_formatdate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server.js",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "src_server_js",
+      "target": "src_server_eq",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/server.js",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "src_server_js",
+      "target": "src_server_capitalize",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/db.js",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_db_db_js",
+      "target": "db_db_database",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/db.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_db_db_js",
+      "target": "db_db_path",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/db.js",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "src_db_db_js",
+      "target": "db_db_db",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "src_routes_operatore_js",
+      "target": "src_db_db_js",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "src_routes_tickets_js",
+      "target": "src_db_db_js",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/init.js",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_db_init_js",
+      "target": "db_init_database",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/init.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_db_init_js",
+      "target": "db_init_path",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/init.js",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "src_db_init_js",
+      "target": "db_init_fs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/init.js",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "src_db_init_js",
+      "target": "db_init_datadir",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/init.js",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "src_db_init_js",
+      "target": "db_init_db",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/init.js",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "src_db_init_js",
+      "target": "db_init_createtables",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/seed.js",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_db_seed_js",
+      "target": "db_seed_database",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/seed.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_db_seed_js",
+      "target": "db_seed_path",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/seed.js",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "src_db_seed_js",
+      "target": "db_seed_bcrypt",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/seed.js",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "src_db_seed_js",
+      "target": "db_seed_db",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/seed.js",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "src_db_seed_js",
+      "target": "db_seed_hash",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/db/seed.js",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "src_db_seed_js",
+      "target": "db_seed_seed",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/middleware/auth.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_middleware_auth_js",
+      "target": "middleware_auth_requireutente",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/middleware/auth.js",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "src_middleware_auth_js",
+      "target": "middleware_auth_requireoperatore",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/middleware/auth.js",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "src_middleware_auth_js",
+      "target": "middleware_auth_requireadmin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "src_routes_operatore_js",
+      "target": "src_middleware_auth_js",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "src_routes_tickets_js",
+      "target": "src_middleware_auth_js",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "src_routes_tickets_js",
+      "target": "middleware_auth_requireutente",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "src_routes_operatore_js",
+      "target": "middleware_auth_requireoperatore",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_routes_operatore_js",
+      "target": "routes_operatore_express",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_routes_operatore_js",
+      "target": "routes_operatore_bcrypt",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "src_routes_operatore_js",
+      "target": "routes_operatore_db",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "src_routes_operatore_js",
+      "target": "routes_operatore_requireoperatore",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "src_routes_operatore_js",
+      "target": "routes_operatore_router",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "src_routes_operatore_js",
+      "target": "routes_operatore_valid_status",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "src_routes_operatore_js",
+      "target": "routes_operatore_valid_priority",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "src_routes_operatore_js",
+      "target": "routes_operatore_valid_category",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "src_routes_operatore_js",
+      "target": "routes_operatore_statusrows",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "src_routes_operatore_js",
+      "target": "routes_operatore_counts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "src_routes_operatore_js",
+      "target": "routes_operatore_activetickets",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L48",
+      "weight": 1.0,
+      "source": "src_routes_operatore_js",
+      "target": "routes_operatore_avgrow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L71",
+      "weight": 1.0,
+      "source": "src_routes_operatore_js",
+      "target": "routes_operatore_conditions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L72",
+      "weight": 1.0,
+      "source": "src_routes_operatore_js",
+      "target": "routes_operatore_params",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L89",
+      "weight": 1.0,
+      "source": "src_routes_operatore_js",
+      "target": "routes_operatore_tickets",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L189",
+      "weight": 1.0,
+      "source": "src_routes_operatore_js",
+      "target": "routes_operatore_ticketid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L190",
+      "weight": 1.0,
+      "source": "src_routes_operatore_js",
+      "target": "routes_operatore_ticket",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L123",
+      "weight": 1.0,
+      "source": "src_routes_operatore_js",
+      "target": "routes_operatore_comments",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L134",
+      "weight": 1.0,
+      "source": "src_routes_operatore_js",
+      "target": "routes_operatore_history",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L142",
+      "weight": 1.0,
+      "source": "src_routes_operatore_js",
+      "target": "routes_operatore_rating",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L176",
+      "weight": 1.0,
+      "source": "src_routes_operatore_js",
+      "target": "routes_operatore_now",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L230",
+      "weight": 1.0,
+      "source": "src_routes_operatore_js",
+      "target": "routes_operatore_existing",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/operatore.js",
+      "source_location": "L249",
+      "weight": 1.0,
+      "source": "src_routes_operatore_js",
+      "target": "routes_operatore_dbuser",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "src_routes_tickets_js",
+      "target": "routes_tickets_express",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "src_routes_tickets_js",
+      "target": "routes_tickets_bcrypt",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "src_routes_tickets_js",
+      "target": "routes_tickets_db",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "src_routes_tickets_js",
+      "target": "routes_tickets_requireutente",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "src_routes_tickets_js",
+      "target": "routes_tickets_router",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "src_routes_tickets_js",
+      "target": "routes_tickets_categories",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "src_routes_tickets_js",
+      "target": "routes_tickets_priorities",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "src_routes_tickets_js",
+      "target": "routes_tickets_tickets",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L35",
+      "weight": 1.0,
+      "source": "src_routes_tickets_js",
+      "target": "routes_tickets_errors",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L56",
+      "weight": 1.0,
+      "source": "src_routes_tickets_js",
+      "target": "routes_tickets_result",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L185",
+      "weight": 1.0,
+      "source": "src_routes_tickets_js",
+      "target": "routes_tickets_ticketid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L186",
+      "weight": 1.0,
+      "source": "src_routes_tickets_js",
+      "target": "routes_tickets_ticket",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L88",
+      "weight": 1.0,
+      "source": "src_routes_tickets_js",
+      "target": "routes_tickets_comments",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L96",
+      "weight": 1.0,
+      "source": "src_routes_tickets_js",
+      "target": "routes_tickets_history",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L104",
+      "weight": 1.0,
+      "source": "src_routes_tickets_js",
+      "target": "routes_tickets_rating",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L196",
+      "weight": 1.0,
+      "source": "src_routes_tickets_js",
+      "target": "routes_tickets_now",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L171",
+      "weight": 1.0,
+      "source": "src_routes_tickets_js",
+      "target": "routes_tickets_score",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L226",
+      "weight": 1.0,
+      "source": "src_routes_tickets_js",
+      "target": "routes_tickets_existing",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/routes/tickets.js",
+      "source_location": "L246",
+      "weight": 1.0,
+      "source": "src_routes_tickets_js",
+      "target": "routes_tickets_dbuser",
+      "confidence_score": 1.0
+    }
+  ],
+  "hyperedges": []
+}

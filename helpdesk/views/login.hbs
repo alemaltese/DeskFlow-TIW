@@ -1,0 +1,30 @@
+<div class="auth-wrap">
+  <div class="card">
+    <h2 style="margin-bottom:0.25rem;">Accedi</h2>
+    <p class="text-muted" style="margin-bottom:1.5rem;">Inserisci le tue credenziali per continuare.</p>
+
+    {{#if error}}
+    <div class="flash flash-error">{{error}}</div>
+    {{/if}}
+
+    <form action="/login" method="POST">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" value="{{old.email}}"
+               required autocomplete="email" autofocus>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password"
+               required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%; margin-top:0.5rem;">
+        Accedi
+      </button>
+    </form>
+
+    <p style="margin-top:1.25rem; text-align:center; font-size:0.875rem; color:#64748b;">
+      Non hai un account? <a href="/register">Registrati</a>
+    </p>
+  </div>
+</div>

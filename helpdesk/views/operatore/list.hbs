@@ -1,0 +1,90 @@
+{{!-- ── Barra filtri ── --}}
+<form method="GET" action="/operatore/tickets" class="filter-bar card">
+  <div class="filter-group">
+    <label for="f-status">Stato</label>
+    <select id="f-status" name="status">
+      <option value="">Tutti</option>
+      <option value="aperto"   {{#if (eq filters.status 'aperto')}}selected{{/if}}>Aperto</option>
+      <option value="in_corso" {{#if (eq filters.status 'in_corso')}}selected{{/if}}>In corso</option>
+      <option value="risolto"  {{#if (eq filters.status 'risolto')}}selected{{/if}}>Risolto</option>
+      <option value="chiuso"   {{#if (eq filters.status 'chiuso')}}selected{{/if}}>Chiuso</option>
+    </select>
+  </div>
+
+  <div class="filter-group">
+    <label for="f-priority">Priorità</label>
+    <select id="f-priority" name="priority">
+      <option value="">Tutte</option>
+      <option value="urgente" {{#if (eq filters.priority 'urgente')}}selected{{/if}}>Urgente</option>
+      <option value="alta"    {{#if (eq filters.priority 'alta')}}selected{{/if}}>Alta</option>
+      <option value="media"   {{#if (eq filters.priority 'media')}}selected{{/if}}>Media</option>
+      <option value="bassa"   {{#if (eq filters.priority 'bassa')}}selected{{/if}}>Bassa</option>
+    </select>
+  </div>
+
+  <div class="filter-group">
+    <label for="f-category">Categoria</label>
+    <select id="f-category" name="category">
+      <option value="">Tutte</option>
+      <option value="tecnico"      {{#if (eq filters.category 'tecnico')}}selected{{/if}}>Tecnico</option>
+      <option value="account"      {{#if (eq filters.category 'account')}}selected{{/if}}>Account</option>
+      <option value="fatturazione" {{#if (eq filters.category 'fatturazione')}}selected{{/if}}>Fatturazione</option>
+      <option value="altro"        {{#if (eq filters.category 'altro')}}selected{{/if}}>Altro</option>
+    </select>
+  </div>
+
+  <div class="filter-group" style="flex:1; min-width:180px;">
+    <label for="f-search">Cerca</label>
+    <input type="text" id="f-search" name="search" value="{{filters.search}}" placeholder="Titolo o descrizione…">
+  </div>
+
+  <div class="filter-actions">
+    <button type="submit" class="btn btn-primary btn-sm">Filtra</button>
+    <a href="/operatore/tickets" class="btn btn-secondary btn-sm">Reimposta</a>
+  </div>
+</form>
+
+{{!-- ── Tabella ticket ── --}}
+<div class="card">
+  <div class="card-header">
+    <h2>
+      I miei ticket
+      {{#if hasFilters}}<span class="text-muted" style="font-size:0.85rem; font-weight:400;">(filtrati)</span>{{/if}}
+    </h2>
+    <span class="text-muted" style="font-size:0.875rem;">{{tickets.length}} risultati</span>
+  </div>
+
+  {{#if tickets.length}}
+  <table>
+    <thead>
+      <tr>
+        <th style="width:50px">#</th>
+        <th>Titolo</th>
+        <th>Utente</th>
+        <th>Categoria</th>
+        <th>Priorità</th>
+        <th>Stato</th>
+        <th>Data</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each tickets}}
+      <tr>
+        <td class="text-muted">{{this.id}}</td>
+        <td><a href="/operatore/tickets/{{this.id}}">{{this.title}}</a></td>
+        <td>{{this.user_name}}</td>
+        <td>{{capitalize this.category}}</td>
+        <td><span class="badge badge-{{this.priority}}">{{capitalize this.priority}}</span></td>
+        <td><span class="badge badge-{{this.status}}">{{capitalize this.status}}</span></td>
+        <td class="text-muted">{{formatDate this.created_at}}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+  {{else}}
+  <div style="text-align:center; padding:2.5rem 0; color:#64748b;">
+    <p>Nessun ticket trovato con i filtri selezionati.</p>
+    <a href="/operatore/tickets" class="btn btn-secondary btn-sm" style="margin-top:0.75rem;">Reimposta filtri</a>
+  </div>
+  {{/if}}
+</div>

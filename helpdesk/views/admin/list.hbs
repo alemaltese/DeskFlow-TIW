@@ -1,0 +1,83 @@
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem;">
+  <h1>Tutti i ticket</h1>
+</div>
+
+<div class="card filter-bar">
+  <form method="GET" action="/admin/tickets">
+    <div class="filter-group">
+      <select name="status">
+        <option value="">Tutti gli stati</option>
+        {{#each STATUSES}}
+        <option value="{{this}}" {{#if (eq this ../filter.status)}}selected{{/if}}>{{capitalize this}}</option>
+        {{/each}}
+      </select>
+
+      <select name="priority">
+        <option value="">Tutte le priorità</option>
+        {{#each PRIORITIES}}
+        <option value="{{this}}" {{#if (eq this ../filter.priority)}}selected{{/if}}>{{capitalize this}}</option>
+        {{/each}}
+      </select>
+
+      <select name="category">
+        <option value="">Tutte le categorie</option>
+        {{#each CATEGORIES}}
+        <option value="{{this}}" {{#if (eq this ../filter.category)}}selected{{/if}}>{{capitalize this}}</option>
+        {{/each}}
+      </select>
+
+      <select name="assigned_to">
+        <option value="">Tutti gli operatori</option>
+        <option value="unassigned" {{#if (eq filter.assigned_to "unassigned")}}selected{{/if}}>Non assegnati</option>
+        {{#each operators}}
+        <option value="{{this.id}}" {{#if (eq this.id ../filter.assigned_to)}}selected{{/if}}>{{this.name}}</option>
+        {{/each}}
+      </select>
+
+      <input type="text" name="q" placeholder="Cerca..." value="{{filter.q}}">
+    </div>
+    <div class="filter-actions">
+      <button type="submit" class="btn btn-primary">Filtra</button>
+      <a href="/admin/tickets" class="btn btn-secondary">Reimposta</a>
+    </div>
+  </form>
+</div>
+
+{{#if tickets.length}}
+<div class="card" style="margin-top:1rem;">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Titolo</th>
+        <th>Utente</th>
+        <th>Operatore</th>
+        <th>Categoria</th>
+        <th>Priorità</th>
+        <th>Stato</th>
+        <th>Data</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each tickets}}
+      <tr>
+        <td>{{this.id}}</td>
+        <td>{{this.title}}</td>
+        <td>{{this.user_name}}</td>
+        <td>{{#if this.operator_name}}{{this.operator_name}}{{else}}<span class="text-muted">—</span>{{/if}}</td>
+        <td>{{capitalize this.category}}</td>
+        <td><span class="badge badge-{{this.priority}}">{{capitalize this.priority}}</span></td>
+        <td><span class="badge badge-{{this.status}}">{{capitalize this.status}}</span></td>
+        <td>{{formatDate this.created_at}}</td>
+        <td><a href="/admin/tickets/{{this.id}}" class="btn btn-sm btn-primary">Gestisci</a></td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</div>
+{{else}}
+<div class="card" style="margin-top:1rem;">
+  <p class="text-muted">Nessun ticket trovato.</p>
+</div>
+{{/if}}

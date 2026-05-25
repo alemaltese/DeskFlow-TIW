@@ -1,0 +1,110 @@
+<h1 style="margin-bottom:1.5rem;">Dashboard</h1>
+
+{{!-- ── KPI grid ── --}}
+<div class="kpi-grid">
+  <div class="kpi-card kpi-aperto">
+    <span class="kpi-number">{{counts.aperto}}</span>
+    <span class="kpi-label">Aperti</span>
+  </div>
+  <div class="kpi-card kpi-in_corso">
+    <span class="kpi-number">{{counts.in_corso}}</span>
+    <span class="kpi-label">In corso</span>
+  </div>
+  <div class="kpi-card kpi-risolto">
+    <span class="kpi-number">{{counts.risolto}}</span>
+    <span class="kpi-label">Risolti</span>
+  </div>
+  <div class="kpi-card kpi-chiuso">
+    <span class="kpi-number">{{counts.chiuso}}</span>
+    <span class="kpi-label">Chiusi</span>
+  </div>
+</div>
+
+{{!-- ── Ticket attivi ── --}}
+<div class="card">
+  <div class="card-header">
+    <h2>I miei ticket attivi</h2>
+    <a href="/operatore/tickets" class="btn btn-secondary btn-sm">Vedi tutti →</a>
+  </div>
+
+  {{#if activeTickets.length}}
+  <table>
+    <thead>
+      <tr>
+        <th style="width:50px">#</th>
+        <th>Titolo</th>
+        <th>Priorità</th>
+        <th>Stato</th>
+        <th>Utente</th>
+        <th>Aperto il</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each activeTickets}}
+      <tr>
+        <td class="text-muted">{{this.id}}</td>
+        <td><a href="/operatore/tickets/{{this.id}}">{{this.title}}</a></td>
+        <td><span class="badge badge-{{this.priority}}">{{capitalize this.priority}}</span></td>
+        <td><span class="badge badge-{{this.status}}">{{capitalize this.status}}</span></td>
+        <td>{{this.user_name}}</td>
+        <td class="text-muted">{{formatDate this.created_at}}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+  {{else}}
+  <p class="text-muted" style="padding:1rem 0;">Nessun ticket attivo al momento. Ottimo lavoro!</p>
+  {{/if}}
+</div>
+
+{{!-- ── Performance ── --}}
+<div class="card">
+  <h2 style="margin-bottom:1.25rem;">Performance</h2>
+  <div style="display:flex; gap:3rem; flex-wrap:wrap; align-items:flex-start;">
+
+    <div>
+      <div class="text-muted" style="font-size:0.82rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.4rem;">
+        Risolti questo mese
+      </div>
+      <div style="font-size:2.5rem; font-weight:700; color:#16a34a; line-height:1;">
+        {{kpi.resolvedThisMonth}}
+      </div>
+    </div>
+
+    <div>
+      <div class="text-muted" style="font-size:0.82rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.4rem;">
+        Rating medio
+      </div>
+      {{#if kpi.avgRating}}
+      <div style="display:flex; align-items:center; gap:0.75rem;">
+        <span style="font-size:2rem; font-weight:700; color:#1e293b; line-height:1;">{{kpi.avgRating}}</span>
+        <span class="stars" style="font-size:1.4rem;">
+          {{#each kpi.avgStars}}
+            {{#if this.filled}}★{{else}}<span class="star-empty">★</span>{{/if}}
+          {{/each}}
+        </span>
+        <span class="text-muted" style="font-size:0.85rem;">su 5</span>
+      </div>
+      {{else}}
+      <p class="text-muted" style="font-size:0.9rem; margin-top:0.25rem;">Nessuna valutazione ancora</p>
+      {{/if}}
+    </div>
+
+    <div>
+      <div class="text-muted" style="font-size:0.82rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.4rem;">
+        Tasso di risoluzione
+      </div>
+      {{#if counts}}
+      <div style="min-width:180px;">
+        <div style="font-size:1rem; font-weight:600; margin-bottom:0.4rem; color:#1e293b;">
+          {{counts.risolto}} chiusi su {{counts.chiuso}} totali
+        </div>
+        <div class="bar-container">
+          <div class="bar" style="width:{{counts.risolto}}%;"></div>
+        </div>
+      </div>
+      {{/if}}
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,148 @@
+<div style="margin-bottom:1rem;">
+  <a href="/admin/tickets" class="btn btn-secondary btn-sm">← Tutti i ticket</a>
+</div>
+
+<div class="two-col-layout">
+
+  {{!-- Sidebar azione --}}
+  <div class="col-sidebar" style="order:-1;">
+    <div class="sidebar-sticky">
+
+      <div class="card">
+        <h3>Informazioni</h3>
+        <table style="margin-top:0.5rem;">
+          <tbody>
+            <tr><td style="color:#64748b;">ID</td><td>#{{ticket.id}}</td></tr>
+            <tr><td style="color:#64748b;">Utente</td><td>{{ticket.user_name}}</td></tr>
+            <tr><td style="color:#64748b;">Email</td><td>{{ticket.user_email}}</td></tr>
+            <tr><td style="color:#64748b;">Categoria</td><td>{{capitalize ticket.category}}</td></tr>
+            <tr><td style="color:#64748b;">Aperto</td><td>{{formatDate ticket.created_at}}</td></tr>
+            <tr><td style="color:#64748b;">Aggiornato</td><td>{{formatDate ticket.updated_at}}</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card" style="margin-top:1rem;">
+        <h3>Stato</h3>
+        <form action="/admin/tickets/{{ticket.id}}/status" method="POST" style="margin-top:0.5rem;">
+          <select name="status" style="width:100%; margin-bottom:0.5rem;">
+            {{#each STATUSES}}
+            <option value="{{this}}" {{#if (eq this ../ticket.status)}}selected{{/if}}>{{capitalize this}}</option>
+            {{/each}}
+          </select>
+          <button type="submit" class="btn btn-primary btn-sm" style="width:100%;">Aggiorna stato</button>
+        </form>
+      </div>
+
+      <div class="card" style="margin-top:1rem;">
+        <h3>Priorità</h3>
+        <form action="/admin/tickets/{{ticket.id}}/priorita" method="POST" style="margin-top:0.5rem;">
+          <select name="priority" style="width:100%; margin-bottom:0.5rem;">
+            {{#each PRIORITIES}}
+            <option value="{{this}}" {{#if (eq this ../ticket.priority)}}selected{{/if}}>{{capitalize this}}</option>
+            {{/each}}
+          </select>
+          <button type="submit" class="btn btn-warning btn-sm" style="width:100%;">Aggiorna priorità</button>
+        </form>
+      </div>
+
+      <div class="card" style="margin-top:1rem;">
+        <h3>Assegnazione</h3>
+        <form action="/admin/tickets/{{ticket.id}}/assegna" method="POST" style="margin-top:0.5rem;">
+          <select name="operator_id" style="width:100%; margin-bottom:0.5rem;">
+            <option value="">— Non assegnato —</option>
+            {{#each operators}}
+            <option value="{{this.id}}" {{#if (eq this.id ../ticket.assigned_to)}}selected{{/if}}>{{this.name}}</option>
+            {{/each}}
+          </select>
+          <button type="submit" class="btn btn-secondary btn-sm" style="width:100%;">Assegna operatore</button>
+        </form>
+        <form action="/admin/tickets/{{ticket.id}}/auto-assign" method="POST" style="margin-top:0.5rem;">
+          <button type="submit" class="btn btn-primary btn-sm" style="width:100%;">Auto-assegna</button>
+        </form>
+      </div>
+
+      {{#if rating}}
+      <div class="card" style="margin-top:1rem;">
+        <h3>Valutazione utente</h3>
+        <div class="stars" style="margin-top:0.5rem;">
+          {{#each rating.starsArr}}
+          <span>{{#if this}}★{{else}}☆{{/if}}</span>
+          {{/each}}
+        </div>
+        {{#if rating.comment}}
+        <p style="margin-top:0.5rem; font-size:0.85rem; color:#64748b;">{{rating.comment}}</p>
+        {{/if}}
+      </div>
+      {{/if}}
+
+    </div>
+  </div>
+
+  {{!-- Main content --}}
+  <div class="col-main">
+
+    <div class="card">
+      <h1>{{ticket.title}}</h1>
+      <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1rem;">
+        <span class="badge badge-{{ticket.status}}">{{capitalize ticket.status}}</span>
+        <span class="badge badge-{{ticket.priority}}">{{capitalize ticket.priority}}</span>
+        <span class="badge" style="background:#e2e8f0; color:#475569;">{{capitalize ticket.category}}</span>
+      </div>
+      <p>{{ticket.description}}</p>
+    </div>
+
+    <div class="card" style="margin-top:1.5rem;">
+      <h2>Conversazione</h2>
+      {{#each comments}}
+      <div class="comment-container {{#if this.is_internal}}note-interna{{/if}}" style="margin-top:1rem;">
+        <div class="comment-header">
+          <strong>{{this.author_name}}</strong>
+          <span style="color:#64748b; font-size:0.8rem;">{{capitalize this.author_role}}</span>
+          {{#if this.is_internal}}<span class="badge" style="background:#fef3c7; color:#92400e; font-size:0.7rem;">Nota interna</span>{{/if}}
+          <span style="color:#94a3b8; font-size:0.8rem; margin-left:auto;">{{formatDate this.created_at}}</span>
+        </div>
+        <div class="comment-body">{{this.body}}</div>
+      </div>
+      {{else}}
+      <p class="text-muted" style="margin-top:0.75rem;">Nessun commento.</p>
+      {{/each}}
+
+      <form action="/admin/tickets/{{ticket.id}}/commenti" method="POST" style="margin-top:1.5rem;">
+        <div class="form-group">
+          <label for="body">Aggiungi commento</label>
+          <textarea id="body" name="body" rows="3" required></textarea>
+        </div>
+        <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+          <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.875rem; cursor:pointer;">
+            <input type="checkbox" name="is_internal" value="1">
+            Nota interna (visibile solo allo staff)
+          </label>
+          <button type="submit" class="btn btn-primary btn-sm">Invia</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card" style="margin-top:1.5rem;">
+      <h2>Storico stati</h2>
+      {{#if history.length}}
+      <div class="timeline" style="margin-top:0.75rem;">
+        {{#each history}}
+        <div class="timeline-item">
+          <div class="timeline-dot dot-{{this.new_status}}"></div>
+          <div style="flex:1;">
+            <span class="badge badge-{{this.old_status}}">{{capitalize this.old_status}}</span>
+            → <span class="badge badge-{{this.new_status}}">{{capitalize this.new_status}}</span>
+            <span style="color:#64748b; font-size:0.8rem; margin-left:0.5rem;">da {{this.changed_by_name}}</span>
+            <div style="color:#94a3b8; font-size:0.75rem;">{{formatDate this.changed_at}}</div>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+      {{else}}
+      <p class="text-muted" style="margin-top:0.75rem;">Nessuna variazione di stato.</p>
+      {{/if}}
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,137 @@
+<h1>Admin Dashboard</h1>
+
+<div class="kpi-grid" style="margin-bottom:2rem;">
+  <div class="kpi-card">
+    <div class="kpi-number">{{counts.total}}</div>
+    <div class="kpi-label">Ticket totali</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-number">{{counts.aperto}}</div>
+    <div class="kpi-label">Aperti</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-number">{{counts.in_corso}}</div>
+    <div class="kpi-label">In lavorazione</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-number">{{counts.risolto}}</div>
+    <div class="kpi-label">Risolti</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-number">{{counts.chiuso}}</div>
+    <div class="kpi-label">Chiusi</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-number">{{userCounts.utenti}}</div>
+    <div class="kpi-label">Utenti</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-number">{{userCounts.operatori}}</div>
+    <div class="kpi-label">Operatori</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-number">{{unassigned.length}}</div>
+    <div class="kpi-label">Non assegnati</div>
+  </div>
+</div>
+
+<div class="two-col-layout">
+  <div class="col-main">
+
+    {{#if unassigned.length}}
+    <div class="card">
+      <h2>Ticket non assegnati</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Titolo</th>
+            <th>Utente</th>
+            <th>Priorità</th>
+            <th>Data</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each unassigned}}
+          <tr>
+            <td>{{this.id}}</td>
+            <td>{{this.title}}</td>
+            <td>{{this.user_name}}</td>
+            <td><span class="badge badge-{{this.priority}}">{{capitalize this.priority}}</span></td>
+            <td>{{formatDate this.created_at}}</td>
+            <td>
+              <a href="/admin/tickets/{{this.id}}" class="btn btn-sm btn-primary">Gestisci</a>
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+    {{else}}
+    <div class="card">
+      <p class="text-muted">Nessun ticket non assegnato. Ottimo lavoro!</p>
+    </div>
+    {{/if}}
+
+    <div class="card" style="margin-top:1.5rem;">
+      <h2>Ultimi ticket</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Titolo</th>
+            <th>Utente</th>
+            <th>Operatore</th>
+            <th>Stato</th>
+            <th>Data</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each recentTickets}}
+          <tr>
+            <td><a href="/admin/tickets/{{this.id}}">#{{this.id}}</a></td>
+            <td>{{this.title}}</td>
+            <td>{{this.user_name}}</td>
+            <td>{{#if this.operator_name}}{{this.operator_name}}{{else}}<span class="text-muted">—</span>{{/if}}</td>
+            <td><span class="badge badge-{{this.status}}">{{capitalize this.status}}</span></td>
+            <td>{{formatDate this.created_at}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <div class="col-sidebar">
+    <div class="sidebar-sticky">
+      <div class="card">
+        <h3>Carico operatori</h3>
+        {{#if workload.length}}
+        <table style="margin-top:0.5rem;">
+          <tbody>
+            {{#each workload}}
+            <tr>
+              <td>{{this.name}}</td>
+              <td style="text-align:right; font-weight:600;">{{this.active_tickets}}</td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+        {{else}}
+        <p class="text-muted">Nessun operatore.</p>
+        {{/if}}
+      </div>
+
+      <div class="card" style="margin-top:1rem;">
+        <h3>Azioni rapide</h3>
+        <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:0.5rem;">
+          <a href="/admin/tickets" class="btn btn-secondary">Tutti i ticket</a>
+          <a href="/admin/utenti" class="btn btn-secondary">Gestione utenti</a>
+          <a href="/admin/utenti/nuovo" class="btn btn-primary">Nuovo utente</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

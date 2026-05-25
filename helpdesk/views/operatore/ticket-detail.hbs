@@ -1,0 +1,150 @@
+<div class="two-col-layout">
+
+  {{!-- ═══════════════ COLONNA PRINCIPALE ═══════════════ --}}
+  <div class="col-main">
+
+    {{!-- Header --}}
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h1>{{ticket.title}}</h1>
+          <div style="display:flex; flex-wrap:wrap; gap:0.5rem; align-items:center; margin-top:0.5rem;">
+            <span class="badge badge-{{ticket.status}}">{{capitalize ticket.status}}</span>
+            <span class="badge badge-{{ticket.priority}}">{{capitalize ticket.priority}}</span>
+            <span class="text-muted">· {{capitalize ticket.category}}</span>
+            <span class="text-muted">· da <strong>{{ticket.user_name}}</strong></span>
+            <span class="text-muted">· {{formatDate ticket.created_at}}</span>
+          </div>
+        </div>
+        <a href="/operatore/tickets" class="btn btn-secondary btn-sm" style="white-space:nowrap;">← Lista</a>
+      </div>
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:1rem 1.25rem; margin-top:0.5rem;">
+        <p style="color:#1e293b; white-space:pre-wrap;">{{ticket.description}}</p>
+      </div>
+    </div>
+
+    {{!-- Storico stati --}}
+    {{#if history.length}}
+    <div class="card">
+      <h2>Storico stati</h2>
+      <ul class="timeline">
+        {{#each history}}
+        <li class="timeline-item">
+          <span class="timeline-dot dot-{{this.new_status}}"></span>
+          <div class="timeline-content">
+            {{#if this.old_status}}
+              <strong>{{this.changed_by_name}}</strong> ha cambiato lo stato
+              da <em>{{this.old_status}}</em> a <em>{{this.new_status}}</em>
+            {{else}}
+              <strong>{{this.changed_by_name}}</strong> ha aperto il ticket
+              con stato <em>{{this.new_status}}</em>
+            {{/if}}
+            <div class="timeline-meta">{{formatDate this.created_at}}</div>
+          </div>
+        </li>
+        {{/each}}
+      </ul>
+    </div>
+    {{/if}}
+
+    {{!-- Conversazione (tutti i commenti) --}}
+    <div class="card">
+      <h2>Conversazione</h2>
+
+      {{#if comments.length}}
+      <div class="comment-container">
+        {{#each comments}}
+          {{#if this.is_internal}}
+          {{!-- Nota interna --}}
+          <div class="note-interna" style="align-self:stretch; max-width:100%;">
+            <div class="note-label">🔒 Nota interna — {{this.author_name}}</div>
+            <p style="margin-top:0.4rem; white-space:pre-wrap;">{{this.content}}</p>
+            <div class="text-muted" style="font-size:0.78rem; margin-top:0.5rem;">{{formatDate this.created_at}}</div>
+          </div>
+          {{else}}
+          {{!-- Commento pubblico --}}
+          <div class="comment {{#if this.isOwn}}comment-own{{else}}comment-other{{/if}}">
+            <div class="comment-header">
+              <strong>{{this.author_name}}</strong>
+              <span class="text-muted">{{this.author_role}}</span>
+              <span>{{formatDate this.created_at}}</span>
+            </div>
+            <div class="comment-body">{{this.content}}</div>
+          </div>
+          {{/if}}
+        {{/each}}
+      </div>
+      {{else}}
+      <p class="text-muted">Nessun messaggio ancora.</p>
+      {{/if}}
+
+      {{!-- Form nuovo messaggio --}}
+      <form action="/operatore/tickets/{{ticket.id}}/comments" method="POST" style="margin-top:1.5rem;">
+        <label for="content">Scrivi una risposta</label>
+        <textarea
+          id="content"
+          name="content"
+          rows="3"
+          maxlength="1000"
+          placeholder="Rispondi al cliente o aggiungi una nota interna…"
+          required
+        ></textarea>
+        <div style="display:flex; align-items:center; gap:1.25rem; margin-top:0.75rem;">
+          <label style="display:flex; align-items:center; gap:0.4rem; font-weight:400; cursor:pointer; margin:0;">
+            <input type="checkbox" name="is_internal" value="1" style="width:auto; accent-color:#f59e0b;">
+            <span style="font-size:0.88rem; color:#64748b;">Nota interna <em>(visibile solo allo staff)</em></span>
+          </label>
+          <button type="submit" class="btn btn-primary btn-sm" style="margin-left:auto;">Invia</button>
+        </div>
+      </form>
+    </div>
+
+  </div>{{!-- /col-main --}}
+
+  {{!-- ═══════════════ SIDEBAR ═══════════════ --}}
+  <div class="col-sidebar">
+
+    {{!-- Cambio stato --}}
+    <div class="card sidebar-sticky">
+      <h3 style="margin-bottom:1rem;">Aggiorna stato</h3>
+      <form action="/operatore/tickets/{{ticket.id}}/status" method="POST">
+        <select name="new_status" style="margin-bottom:0.75rem;">
+          <option value="in_corso" {{#if (eq ticket.status 'in_corso')}}selected{{/if}}>In corso</option>
+          <option value="risolto"  {{#if (eq ticket.status 'risolto')}}selected{{/if}}>Risolto</option>
+        </select>
+        <button type="submit" class="btn btn-primary btn-sm" style="width:100%;">Aggiorna stato</button>
+      </form>
+
+      <hr style="border:none; border-top:1px solid #f1f5f9; margin:1.25rem 0;">
+
+      <div style="font-size:0.82rem; color:#64748b; line-height:1.7;">
+        <div><strong>Stato attuale:</strong>
+          <span class="badge badge-{{ticket.status}}" style="margin-left:0.25rem;">{{capitalize ticket.status}}</span>
+        </div>
+        <div><strong>Priorità:</strong>
+          <span class="badge badge-{{ticket.priority}}" style="margin-left:0.25rem;">{{capitalize ticket.priority}}</span>
+        </div>
+        <div><strong>Categoria:</strong> {{capitalize ticket.category}}</div>
+        <div><strong>Aggiornato:</strong> {{formatDate ticket.updated_at}}</div>
+      </div>
+    </div>
+
+    {{!-- Valutazione cliente --}}
+    {{#if rating}}
+    <div class="card">
+      <h3 style="margin-bottom:0.75rem;">Valutazione cliente</h3>
+      <div class="stars" style="font-size:1.5rem;">
+        {{#each rating.starsArr}}
+          {{#if this.filled}}★{{else}}<span class="star-empty">★</span>{{/if}}
+        {{/each}}
+      </div>
+      <div class="text-muted" style="font-size:0.82rem; margin-top:0.2rem;">{{rating.score}} / 5 stelle</div>
+      {{#if rating.note}}
+      <p style="margin-top:0.75rem; font-style:italic; color:#475569; font-size:0.9rem;">"{{rating.note}}"</p>
+      {{/if}}
+    </div>
+    {{/if}}
+
+  </div>{{!-- /col-sidebar --}}
+
+</div>{{!-- /two-col-layout --}}

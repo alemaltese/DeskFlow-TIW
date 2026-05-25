@@ -1,0 +1,22 @@
+{
+  "name": "helpdesk",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "db:init": "node src/db/init.js",
+    "seed": "node src/db/seed.js"
+  },
+  "dependencies": {
+    "express": "^5",
+    "express-handlebars": "^8",
+    "express-session": "^1",
+    "better-sqlite3": "^11",
+    "bcrypt": "^5"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

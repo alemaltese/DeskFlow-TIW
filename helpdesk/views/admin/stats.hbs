@@ -1,0 +1,165 @@
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.75rem;">
+  <h1>Dashboard Analytics</h1>
+  <form method="GET" action="/admin/stats" style="display:flex; align-items:center; gap:0.5rem;">
+    <label style="font-size:0.875rem; color:#64748b;">Ultimi</label>
+    <select name="days" onchange="this.form.submit()" style="width:auto;">
+      <option value="7"  {{#if (eq days 7)}}selected{{/if}}>7 giorni</option>
+      <option value="30" {{#if (eq days 30)}}selected{{/if}}>30 giorni</option>
+      <option value="90" {{#if (eq days 90)}}selected{{/if}}>90 giorni</option>
+    </select>
+  </form>
+</div>
+
+{{!-- KPI --}}
+<div class="kpi-grid" style="margin-bottom:2rem;">
+  <div class="kpi-card">
+    <div class="kpi-number">{{kpi.totalTickets}}</div>
+    <div class="kpi-label">Ticket aperti nel periodo</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-number">{{#if kpi.avgFirstResponse}}{{kpi.avgFirstResponse}}h{{else}}—{{/if}}</div>
+    <div class="kpi-label">Tempo medio prima risposta</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-number">{{#if kpi.avgResolution}}{{kpi.avgResolution}}h{{else}}—{{/if}}</div>
+    <div class="kpi-label">Tempo medio risoluzione</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-number">
+      {{#if kpi.avgRating}}
+        {{kpi.avgRating}}
+        <span style="font-size:1rem; color:#f59e0b;">
+          {{#each kpi.avgRatingStars}}{{#if this}}★{{else}}☆{{/if}}{{/each}}
+        </span>
+      {{else}}—{{/if}}
+    </div>
+    <div class="kpi-label">Rating medio</div>
+  </div>
+</div>
+
+<div class="two-col-layout">
+  <div class="col-main">
+
+    {{!-- Trend 7 giorni --}}
+    <div class="card" style="margin-bottom:1.5rem;">
+      <h2>Trend ultimi 7 giorni</h2>
+      <div class="chart-vertical" style="margin-top:1.25rem;">
+        {{#each trend}}
+        <div class="chart-col">
+          <div class="chart-bar" style="height: {{this.heightPerc}}%">
+            <span class="chart-value">{{this.count}}</span>
+          </div>
+          <span class="chart-label">{{this.date}}</span>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+
+    {{!-- Performance operatori --}}
+    <div class="card" style="margin-bottom:1.5rem;">
+      <h2>Performance operatori</h2>
+      {{#if operatorPerf.length}}
+      <table style="margin-top:0.75rem;">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Assegnati</th>
+            <th>Risolti</th>
+            <th>Rating medio</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each operatorPerf}}
+          <tr>
+            <td>{{this.name}}</td>
+            <td>{{this.ticket_assegnati}}</td>
+            <td>{{this.ticket_risolti}}</td>
+            <td>
+              {{#if this.starsArr}}
+                <span style="color:#f59e0b; letter-spacing:1px;">
+                  {{#each this.starsArr}}{{#if this}}★{{else}}☆{{/if}}{{/each}}
+                </span>
+                <span style="font-size:0.8rem; color:#64748b; margin-left:4px;">{{../rating_medio}}</span>
+              {{else}}
+                <span class="text-muted">—</span>
+              {{/if}}
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+      {{else}}
+      <p class="text-muted" style="margin-top:0.75rem;">Nessun operatore.</p>
+      {{/if}}
+    </div>
+
+    {{!-- Ticket scaduti --}}
+    {{#if overdueCount}}
+    <div class="card" style="border-left:4px solid #ef4444;">
+      <h2>Ticket scaduti &gt;48h <span style="font-size:1rem; font-weight:400; color:#ef4444;">({{overdueCount}} totali)</span></h2>
+      <ul style="margin-top:0.75rem; list-style:none; padding:0; display:flex; flex-direction:column; gap:0.5rem;">
+        {{#each overdueList}}
+        <li style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+          <a href="/admin/tickets/{{this.id}}" style="font-weight:500;">#{{this.id}} {{this.title}}</a>
+          <span class="badge badge-{{this.priority}}">{{capitalize this.priority}}</span>
+          <span class="badge badge-{{this.status}}">{{capitalize this.status}}</span>
+          <span style="font-size:0.8rem; color:#64748b;">{{this.user_name}} — {{formatDate this.created_at}}</span>
+        </li>
+        {{/each}}
+      </ul>
+    </div>
+    {{/if}}
+
+  </div>
+
+  <div class="col-sidebar">
+    <div class="sidebar-sticky">
+
+      {{!-- Distribuzione per categoria --}}
+      <div class="card" style="margin-bottom:1rem;">
+        <h3>Per categoria</h3>
+        <div style="margin-top:0.75rem;">
+          {{#each byCategory}}
+          <div class="bar-row">
+            <span class="bar-label">{{capitalize this.category}}</span>
+            <div class="bar-container">
+              <div class="bar bar-blue" style="width: {{this.percentage}}%">{{this.count}}</div>
+            </div>
+          </div>
+          {{/each}}
+        </div>
+      </div>
+
+      {{!-- Distribuzione per stato --}}
+      <div class="card" style="margin-bottom:1rem;">
+        <h3>Per stato</h3>
+        <div style="margin-top:0.75rem;">
+          {{#each byStatus}}
+          <div class="bar-row">
+            <span class="bar-label">{{capitalize this.status}}</span>
+            <div class="bar-container">
+              <div class="bar bar-blue" style="width: {{this.percentage}}%">{{this.count}}</div>
+            </div>
+          </div>
+          {{/each}}
+        </div>
+      </div>
+
+      {{!-- Distribuzione per priorità --}}
+      <div class="card">
+        <h3>Per priorità</h3>
+        <div style="margin-top:0.75rem;">
+          {{#each byPriority}}
+          <div class="bar-row">
+            <span class="bar-label">{{capitalize this.priority}}</span>
+            <div class="bar-container">
+              <div class="bar bar-blue" style="width: {{this.percentage}}%">{{this.count}}</div>
+            </div>
+          </div>
+          {{/each}}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

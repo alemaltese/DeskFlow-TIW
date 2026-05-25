@@ -1,0 +1,37 @@
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem;">
+  <h1>Gestione utenti</h1>
+  <a href="/admin/utenti/nuovo" class="btn btn-primary">+ Nuovo utente</a>
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Nome</th>
+        <th>Email</th>
+        <th>Ruolo</th>
+        <th>Ticket aperti</th>
+        <th>Iscritto il</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each users}}
+      <tr>
+        <td>{{this.id}}</td>
+        <td>{{this.name}}</td>
+        <td>{{this.email}}</td>
+        <td><span class="badge badge-in_corso">{{capitalize this.role}}</span></td>
+        <td>{{this.ticket_count}}</td>
+        <td>{{formatDate this.created_at}}</td>
+        <td>
+          <a href="/admin/utenti/{{this.id}}/modifica" class="btn btn-sm btn-secondary">Modifica</a>
+        </td>
+      </tr>
+      {{else}}
+      <tr><td colspan="7" class="text-muted">Nessun utente.</td></tr>
+      {{/each}}
+    </tbody>
+  </table>
+</div>

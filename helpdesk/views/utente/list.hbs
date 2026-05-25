@@ -1,0 +1,39 @@
+<div class="card">
+  <div class="card-header">
+    <h1>I miei ticket</h1>
+    <a href="/tickets/new" class="btn btn-primary">+ Nuovo Ticket</a>
+  </div>
+
+  {{#if tickets.length}}
+  <table>
+    <thead>
+      <tr>
+        <th style="width:50px">#</th>
+        <th>Titolo</th>
+        <th>Categoria</th>
+        <th>Priorità</th>
+        <th>Stato</th>
+        <th>Data apertura</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each tickets}}
+      <tr>
+        <td class="text-muted">{{this.id}}</td>
+        <td><a href="/tickets/{{this.id}}">{{this.title}}</a></td>
+        <td>{{capitalize this.category}}</td>
+        <td><span class="badge badge-{{this.priority}}">{{capitalize this.priority}}</span></td>
+        <td><span class="badge badge-{{this.status}}">{{capitalize this.status}}</span></td>
+        <td class="text-muted">{{formatDate this.created_at}}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+  {{else}}
+  <div style="text-align:center; padding: 3rem 0; color: #64748b;">
+    <p style="font-size:1.1rem;">Non hai ancora aperto nessun ticket.</p>
+    <p style="margin-top:0.5rem;">Se hai bisogno di assistenza, siamo qui per aiutarti!</p>
+    <a href="/tickets/new" class="btn btn-primary" style="margin-top:1.25rem;">Apri il tuo primo ticket</a>
+  </div>
+  {{/if}}
+</div>
