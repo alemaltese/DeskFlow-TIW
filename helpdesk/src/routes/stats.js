@@ -45,14 +45,10 @@ function buildTrend(filterSql, params) {
 
 // ── Admin analytics ─────────────────────────────────────────────────────────
 router.get('/admin/stats', requireAdmin, (req, res) => {
-  const days = Math.max(1, Math.min(365, Number(req.query.days) || 30));
-  const since = isoNow(-days * 24 * 60 * 60 * 1000);
   const overdueSince = isoNow(-48 * 60 * 60 * 1000);
 
-  // 1. KPI
-  const totalTickets = db.prepare(
-    `SELECT COUNT(*) AS cnt FROM tickets WHERE created_at >= ?`
-  ).get(since).cnt;
+  // 1. KPI – tutti i ticket senza filtro temporale
+  const totalTickets = db.prepare(`SELECT COUNT(*) AS cnt FROM tickets`).get().cnt;
 
   const avgFirstResponse = db.prepare(`
     SELECT AVG((julianday(fc.first_comment) - julianday(t.created_at)) * 24) AS hrs
@@ -64,57 +60,67 @@ router.get('/admin/stats', requireAdmin, (req, res) => {
       WHERE u.role IN ('operatore', 'admin')
       GROUP BY c.ticket_id
     ) fc ON fc.ticket_id = t.id
-    WHERE t.created_at >= ?
-  `).get(since).hrs;
+  `).get().hrs;
 
   const avgResolution = db.prepare(`
-    SELECT AVG((julianday(h.created_at) - julianday(t.created_at)) * 24) AS hrs
+    SELECT AVG((julianday(h.changed_at) - julianday(t.created_at)) * 24) AS hrs
     FROM tickets t
-    JOIN status_history h ON h.ticket_id = t.id AND h.new_status = 'risolto'
-    WHERE t.status IN ('risolto', 'chiuso') AND t.created_at >= ?
-  `).get(since).hrs;
+    JOIN status_history h ON h.ticket_id = t.id AND h.new_value = 'risolto'
+    WHERE t.status IN ('risolto', 'chiuso')
+  `).get().hrs;
 
-  const avgRating = db.prepare(`
-    SELECT AVG(r.score) AS avg
-    FROM ratings r
-    JOIN tickets t ON t.id = r.ticket_id
-    WHERE t.created_at >= ?
-  `).get(since).avg;
+  const avgRating = db.prepare(`SELECT AVG(r.score) AS avg FROM ratings r`).get().avg;
 
-  // 2-4. Distributions
+  // 2-4. Distribuzioni senza filtro temporale
   const byCategoryRaw = db.prepare(
-    `SELECT category, COUNT(*) AS count FROM tickets WHERE created_at >= ? GROUP BY category ORDER BY count DESC`
-  ).all(since);
+    `SELECT category, COUNT(*) AS count FROM tickets GROUP BY category ORDER BY count DESC`
+  ).all();
   const byCategory = computeDistribution(byCategoryRaw, totalTickets);
 
   const byStatusRaw = db.prepare(
-    `SELECT status, COUNT(*) AS count FROM tickets WHERE created_at >= ? GROUP BY status ORDER BY count DESC`
-  ).all(since);
+    `SELECT status, COUNT(*) AS count FROM tickets GROUP BY status ORDER BY count DESC`
+  ).all();
   const byStatus = computeDistribution(byStatusRaw, totalTickets);
 
   const byPriorityRaw = db.prepare(
-    `SELECT priority, COUNT(*) AS count FROM tickets WHERE created_at >= ?
+    `SELECT priority, COUNT(*) AS count FROM tickets
      GROUP BY priority
      ORDER BY CASE priority WHEN 'urgente' THEN 4 WHEN 'alta' THEN 3 WHEN 'media' THEN 2 ELSE 1 END DESC`
-  ).all(since);
+  ).all();
   const byPriority = computeDistribution(byPriorityRaw, totalTickets);
 
-  // 5. Trend 7 giorni
-  const trend = buildTrend('', []);
+  // 5. Trend: ultimi 7 giorni con ticket presenti nel DB
+  const trendRaw = db.prepare(`
+    SELECT DATE(created_at) as day, COUNT(*) as count
+    FROM tickets
+    GROUP BY DATE(created_at)
+    ORDER BY day DESC
+    LIMIT 7
+  `).all().reverse();
 
-  // 6. Operator performance
+  const maxCount = Math.max(...trendRaw.map(d => d.count), 1);
+  const trend = trendRaw.map(item => {
+    const d = new Date(item.day + 'T00:00:00');
+    return {
+      date: d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' }),
+      count: item.count,
+      heightPerc: Math.round((item.count / maxCount) * 100) || 4,
+    };
+  });
+
+  // 6. Performance operatori senza filtro temporale
   const operatorPerf = db.prepare(`
     SELECT u.name,
            COUNT(DISTINCT t.id) AS ticket_assegnati,
            SUM(CASE WHEN t.status IN ('risolto', 'chiuso') THEN 1 ELSE 0 END) AS ticket_risolti,
            ROUND(AVG(r.score), 1) AS rating_medio
     FROM users u
-    LEFT JOIN tickets t ON t.assigned_to = u.id AND t.created_at >= ?
+    LEFT JOIN tickets t ON t.assigned_to = u.id
     LEFT JOIN ratings r ON r.ticket_id = t.id
     WHERE u.role = 'operatore'
     GROUP BY u.id
     ORDER BY ticket_risolti DESC
-  `).all(since);
+  `).all() || [];
 
   operatorPerf.forEach(op => {
     op.starsArr = op.rating_medio
@@ -122,7 +128,7 @@ router.get('/admin/stats', requireAdmin, (req, res) => {
       : null;
   });
 
-  // 7. Overdue tickets
+  // 7. Ticket scaduti
   const overdueCount = db.prepare(
     `SELECT COUNT(*) AS cnt FROM tickets WHERE status IN ('aperto', 'in_corso') AND created_at < ?`
   ).get(overdueSince).cnt;
@@ -135,13 +141,11 @@ router.get('/admin/stats', requireAdmin, (req, res) => {
     LIMIT 5
   `).all(overdueSince);
 
-  // Avg rating stars display
   const avgRatingVal = avgRating ? Math.round(avgRating) : null;
   const avgRatingStars = avgRatingVal ? [1,2,3,4,5].map(n => n <= avgRatingVal) : null;
 
   res.render('admin/stats', {
     title: 'Dashboard Analytics',
-    days,
     kpi: {
       totalTickets,
       avgFirstResponse: avgFirstResponse != null ? avgFirstResponse.toFixed(1) : null,
@@ -149,10 +153,13 @@ router.get('/admin/stats', requireAdmin, (req, res) => {
       avgRating:        avgRating        != null ? avgRating.toFixed(1)        : null,
       avgRatingStars,
     },
-    byCategory, byStatus, byPriority,
-    trend,
-    operatorPerf,
-    overdueCount, overdueList,
+    byCategory: byCategory || [],
+    byStatus: byStatus || [],
+    byPriority: byPriority || [],
+    trend: trend || [],
+    operatorPerf: operatorPerf || [],
+    overdueCount,
+    overdueList: overdueList || [],
   });
 });
 

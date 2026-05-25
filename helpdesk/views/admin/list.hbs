@@ -2,46 +2,41 @@
   <h1>Tutti i ticket</h1>
 </div>
 
-<div class="card filter-bar">
-  <form method="GET" action="/admin/tickets">
-    <div class="filter-group">
-      <select name="status">
-        <option value="">Tutti gli stati</option>
-        {{#each STATUSES}}
-        <option value="{{this}}" {{#if (eq this ../filter.status)}}selected{{/if}}>{{capitalize this}}</option>
-        {{/each}}
-      </select>
-
-      <select name="priority">
-        <option value="">Tutte le priorità</option>
-        {{#each PRIORITIES}}
-        <option value="{{this}}" {{#if (eq this ../filter.priority)}}selected{{/if}}>{{capitalize this}}</option>
-        {{/each}}
-      </select>
-
-      <select name="category">
-        <option value="">Tutte le categorie</option>
-        {{#each CATEGORIES}}
-        <option value="{{this}}" {{#if (eq this ../filter.category)}}selected{{/if}}>{{capitalize this}}</option>
-        {{/each}}
-      </select>
-
-      <select name="assigned_to">
-        <option value="">Tutti gli operatori</option>
-        <option value="unassigned" {{#if (eq filter.assigned_to "unassigned")}}selected{{/if}}>Non assegnati</option>
-        {{#each operators}}
-        <option value="{{this.id}}" {{#if (eq this.id ../filter.assigned_to)}}selected{{/if}}>{{this.name}}</option>
-        {{/each}}
-      </select>
-
-      <input type="text" name="q" placeholder="Cerca..." value="{{filter.q}}">
-    </div>
-    <div class="filter-actions">
-      <button type="submit" class="btn btn-primary">Filtra</button>
-      <a href="/admin/tickets" class="btn btn-secondary">Reimposta</a>
-    </div>
-  </form>
-</div>
+<form class="filters-bar" method="GET" action="/admin/tickets">
+  <div class="filters-row">
+    <select name="status" class="filter-select">
+      <option value="">Tutti gli stati</option>
+      <option value="aperto" {{#ifEq activeFilters.status "aperto"}}selected{{/ifEq}}>Aperto</option>
+      <option value="in_corso" {{#ifEq activeFilters.status "in_corso"}}selected{{/ifEq}}>In corso</option>
+      <option value="risolto" {{#ifEq activeFilters.status "risolto"}}selected{{/ifEq}}>Risolto</option>
+      <option value="chiuso" {{#ifEq activeFilters.status "chiuso"}}selected{{/ifEq}}>Chiuso</option>
+    </select>
+    <select name="priority" class="filter-select">
+      <option value="">Tutte le priorità</option>
+      <option value="bassa">Bassa</option>
+      <option value="media">Media</option>
+      <option value="alta">Alta</option>
+      <option value="urgente">Urgente</option>
+    </select>
+    <select name="category" class="filter-select">
+      <option value="">Tutte le categorie</option>
+      <option value="tecnico">Tecnico</option>
+      <option value="account">Account</option>
+      <option value="fatturazione">Fatturazione</option>
+      <option value="altro">Altro</option>
+    </select>
+    <select name="assigned_to" class="filter-select">
+      <option value="">Tutti gli operatori</option>
+      <option value="null">Non assegnati</option>
+      {{#each operators}}
+      <option value="{{this.id}}">{{this.name}}</option>
+      {{/each}}
+    </select>
+    <input type="text" name="search" class="filter-input" placeholder="Cerca nel titolo..." value="{{activeFilters.search}}">
+    <button type="submit" class="btn btn-primary btn-sm">Filtra</button>
+    <a href="/admin/tickets" class="btn btn-secondary btn-sm">Reset</a>
+  </div>
+</form>
 
 {{#if tickets.length}}
 <div class="card" style="margin-top:1rem;">

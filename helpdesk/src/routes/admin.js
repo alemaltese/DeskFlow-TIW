@@ -82,7 +82,7 @@ router.get('/admin/dashboard', (req, res) => {
 
 // ── Ticket list ────────────────────────────────────────────────────────────
 router.get('/admin/tickets', (req, res) => {
-  const { status, priority, category, assigned_to, q } = req.query;
+  const { status, priority, category, assigned_to, search } = req.query;
   const operators = db.prepare(`SELECT id, name FROM users WHERE role = 'operatore' ORDER BY name`).all();
 
   const conditions = [];
@@ -91,15 +91,15 @@ router.get('/admin/tickets', (req, res) => {
   if (status)      { conditions.push('t.status = ?');      params.push(status); }
   if (priority)    { conditions.push('t.priority = ?');    params.push(priority); }
   if (category)    { conditions.push('t.category = ?');    params.push(category); }
-  if (assigned_to === 'unassigned') {
+  if (assigned_to === 'null') {
     conditions.push('t.assigned_to IS NULL');
   } else if (assigned_to) {
     conditions.push('t.assigned_to = ?');
     params.push(Number(assigned_to));
   }
-  if (q) {
-    conditions.push('(t.title LIKE ? OR t.description LIKE ?)');
-    params.push(`%${q}%`, `%${q}%`);
+  if (search && search.trim()) {
+    conditions.push('t.title LIKE ?');
+    params.push(`%${search.trim()}%`);
   }
 
   const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
@@ -117,7 +117,7 @@ router.get('/admin/tickets', (req, res) => {
   res.render('admin/list', {
     title: 'Tutti i ticket',
     tickets, operators, CATEGORIES, PRIORITIES, STATUSES,
-    filter: { status, priority, category, assigned_to, q },
+    activeFilters: { status: status || '', priority: priority || '', category: category || '', assigned_to: assigned_to || '', search: search || '' },
   });
 });
 
@@ -144,7 +144,7 @@ router.get('/admin/tickets/:id', (req, res) => {
     SELECT h.*, u.name AS changed_by_name
     FROM status_history h JOIN users u ON u.id = h.changed_by
     WHERE h.ticket_id = ?
-    ORDER BY h.created_at ASC
+    ORDER BY h.changed_at ASC
   `).all(req.params.id);
 
   const operators = db.prepare(`SELECT id, name FROM users WHERE role = 'operatore' ORDER BY name`).all();
@@ -170,8 +170,8 @@ router.post('/admin/tickets/:id/status', (req, res) => {
   if (STATUSES.includes(status) && status !== ticket.status) {
     db.prepare('UPDATE tickets SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
       .run(status, ticket.id);
-    db.prepare('INSERT INTO status_history (ticket_id, old_status, new_status, changed_by) VALUES (?, ?, ?, ?)')
-      .run(ticket.id, ticket.status, status, req.session.user.id);
+    db.prepare('INSERT INTO status_history (ticket_id, changed_by, event_type, old_value, new_value) VALUES (?, ?, ?, ?, ?)')
+      .run(ticket.id, req.session.user.id, 'status', ticket.status, status);
   }
   req.setFlash('success', 'Stato aggiornato.');
   res.redirect(`/admin/tickets/${ticket.id}`);
@@ -182,15 +182,26 @@ router.post('/admin/tickets/:id/assegna', (req, res) => {
   const ticket = db.prepare('SELECT * FROM tickets WHERE id = ?').get(req.params.id);
   if (!ticket) return res.status(404).render('error', { title: 'Ticket non trovato', message: '' });
 
-  const newOp = operator_id ? Number(operator_id) : null;
-  db.prepare('UPDATE tickets SET assigned_to = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
-    .run(newOp, ticket.id);
+  const oldOp = ticket.assigned_to
+    ? db.prepare('SELECT name FROM users WHERE id = ?').get(ticket.assigned_to)
+    : null;
+  const oldOpName = oldOp ? oldOp.name : 'Non assegnato';
 
-  if (ticket.status === 'aperto' && newOp) {
+  const newOpId = operator_id ? Number(operator_id) : null;
+  const newOp = newOpId ? db.prepare('SELECT name FROM users WHERE id = ?').get(newOpId) : null;
+  const newOpName = newOp ? newOp.name : 'Non assegnato';
+
+  db.prepare('UPDATE tickets SET assigned_to = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
+    .run(newOpId, ticket.id);
+
+  db.prepare('INSERT INTO status_history (ticket_id, changed_by, event_type, old_value, new_value) VALUES (?, ?, ?, ?, ?)')
+    .run(ticket.id, req.session.user.id, 'assign', oldOpName, newOpName);
+
+  if (ticket.status === 'aperto' && newOpId) {
     db.prepare('UPDATE tickets SET status = \'in_corso\', updated_at = CURRENT_TIMESTAMP WHERE id = ?')
       .run(ticket.id);
-    db.prepare('INSERT INTO status_history (ticket_id, old_status, new_status, changed_by) VALUES (?, ?, ?, ?)')
-      .run(ticket.id, 'aperto', 'in_corso', req.session.user.id);
+    db.prepare('INSERT INTO status_history (ticket_id, changed_by, event_type, old_value, new_value) VALUES (?, ?, ?, ?, ?)')
+      .run(ticket.id, req.session.user.id, 'status', 'aperto', 'in_corso');
   }
   req.setFlash('success', 'Operatore aggiornato.');
   res.redirect(`/admin/tickets/${ticket.id}`);
@@ -199,8 +210,16 @@ router.post('/admin/tickets/:id/assegna', (req, res) => {
 router.post('/admin/tickets/:id/priorita', (req, res) => {
   const { priority } = req.body;
   if (!PRIORITIES.includes(priority)) return res.redirect(`/admin/tickets/${req.params.id}`);
+
+  const ticket = db.prepare('SELECT * FROM tickets WHERE id = ?').get(req.params.id);
+  if (!ticket) return res.status(404).render('error', { title: 'Ticket non trovato', message: '' });
+
   db.prepare('UPDATE tickets SET priority = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
     .run(priority, req.params.id);
+
+  db.prepare('INSERT INTO status_history (ticket_id, changed_by, event_type, old_value, new_value) VALUES (?, ?, ?, ?, ?)')
+    .run(ticket.id, req.session.user.id, 'priority', ticket.priority, priority);
+
   req.setFlash('success', 'Priorità aggiornata.');
   res.redirect(`/admin/tickets/${req.params.id}`);
 });
@@ -227,14 +246,24 @@ router.post('/admin/tickets/:id/auto-assign', (req, res) => {
     return res.redirect(`/admin/tickets/${ticket.id}`);
   }
 
+  const oldOp = ticket.assigned_to
+    ? db.prepare('SELECT name FROM users WHERE id = ?').get(ticket.assigned_to)
+    : null;
+  const oldOpName = oldOp ? oldOp.name : 'Non assegnato';
+  const newOpUser = db.prepare('SELECT name FROM users WHERE id = ?').get(op.id);
+  const newOpName = newOpUser ? newOpUser.name : 'Non assegnato';
+
   db.prepare('UPDATE tickets SET assigned_to = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
     .run(op.id, ticket.id);
+
+  db.prepare('INSERT INTO status_history (ticket_id, changed_by, event_type, old_value, new_value) VALUES (?, ?, ?, ?, ?)')
+    .run(ticket.id, req.session.user.id, 'assign', oldOpName, newOpName);
 
   if (ticket.status === 'aperto') {
     db.prepare('UPDATE tickets SET status = \'in_corso\', updated_at = CURRENT_TIMESTAMP WHERE id = ?')
       .run(ticket.id);
-    db.prepare('INSERT INTO status_history (ticket_id, old_status, new_status, changed_by) VALUES (?, ?, ?, ?)')
-      .run(ticket.id, 'aperto', 'in_corso', req.session.user.id);
+    db.prepare('INSERT INTO status_history (ticket_id, changed_by, event_type, old_value, new_value) VALUES (?, ?, ?, ?, ?)')
+      .run(ticket.id, req.session.user.id, 'status', 'aperto', 'in_corso');
   }
   req.setFlash('success', 'Ticket assegnato automaticamente.');
   res.redirect(`/admin/tickets/${ticket.id}`);
@@ -328,6 +357,12 @@ router.post('/admin/utenti/:id', async (req, res) => {
     .run(name.trim(), email.trim().toLowerCase(), hash, role, existing.id);
   req.setFlash('success', 'Utente aggiornato.');
   res.redirect('/admin/utenti');
+});
+
+// ── Profilo admin ──────────────────────────────────────────────────────────
+router.get('/admin/profilo', (req, res) => {
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.session.user.id);
+  res.render('admin/profilo', { title: 'Il mio profilo', utente: user });
 });
 
 module.exports = router;

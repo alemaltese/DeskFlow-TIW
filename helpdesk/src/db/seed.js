@@ -200,40 +200,40 @@ const seed = db.transaction(() => {
 
   // ── Status history ──────────────────────────────────────────────────────────
   const insertHistory = db.prepare(`
-    INSERT INTO status_history (ticket_id, changed_by, old_status, new_status, created_at)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO status_history (ticket_id, changed_by, event_type, old_value, new_value, changed_at)
+    VALUES (?, ?, ?, ?, ?, ?)
   `);
 
   // T2: aperto → in_corso
-  insertHistory.run(t2Id, marioId, 'aperto', 'in_corso', '2024-01-15 08:30:00');
+  insertHistory.run(t2Id, marioId, 'status', 'aperto', 'in_corso', '2024-01-15 08:30:00');
 
   // T4: aperto → in_corso
-  insertHistory.run(t4Id, luciaId, 'aperto', 'in_corso', '2024-01-14 09:00:00');
+  insertHistory.run(t4Id, luciaId, 'status', 'aperto', 'in_corso', '2024-01-14 09:00:00');
 
   // T5: aperto → in_corso
-  insertHistory.run(t5Id, marioId, 'aperto', 'in_corso', '2024-01-14 11:00:00');
+  insertHistory.run(t5Id, marioId, 'status', 'aperto', 'in_corso', '2024-01-14 11:00:00');
 
   // T6: aperto → in_corso → risolto
-  insertHistory.run(t6Id, luciaId, 'aperto',   'in_corso', '2024-01-09 09:00:00');
-  insertHistory.run(t6Id, luciaId, 'in_corso', 'risolto',  '2024-01-12 15:00:00');
+  insertHistory.run(t6Id, luciaId, 'status', 'aperto',   'in_corso', '2024-01-09 09:00:00');
+  insertHistory.run(t6Id, luciaId, 'status', 'in_corso', 'risolto',  '2024-01-12 15:00:00');
 
   // T7: aperto → in_corso → risolto
-  insertHistory.run(t7Id, marioId, 'aperto',   'in_corso', '2024-01-08 09:00:00');
-  insertHistory.run(t7Id, marioId, 'in_corso', 'risolto',  '2024-01-10 14:00:00');
+  insertHistory.run(t7Id, marioId, 'status', 'aperto',   'in_corso', '2024-01-08 09:00:00');
+  insertHistory.run(t7Id, marioId, 'status', 'in_corso', 'risolto',  '2024-01-10 14:00:00');
 
   // T8: aperto → in_corso → risolto
-  insertHistory.run(t8Id, luciaId, 'aperto',   'in_corso', '2024-01-06 10:00:00');
-  insertHistory.run(t8Id, luciaId, 'in_corso', 'risolto',  '2024-01-07 10:00:00');
+  insertHistory.run(t8Id, luciaId, 'status', 'aperto',   'in_corso', '2024-01-06 10:00:00');
+  insertHistory.run(t8Id, luciaId, 'status', 'in_corso', 'risolto',  '2024-01-07 10:00:00');
 
   // T9: aperto → in_corso → risolto → chiuso
-  insertHistory.run(t9Id, marioId, 'aperto',   'in_corso', '2024-01-04 09:00:00');
-  insertHistory.run(t9Id, marioId, 'in_corso', 'risolto',  '2024-01-07 15:00:00');
-  insertHistory.run(t9Id, adminId, 'risolto',  'chiuso',   '2024-01-07 16:00:00');
+  insertHistory.run(t9Id, marioId, 'status', 'aperto',   'in_corso', '2024-01-04 09:00:00');
+  insertHistory.run(t9Id, marioId, 'status', 'in_corso', 'risolto',  '2024-01-07 15:00:00');
+  insertHistory.run(t9Id, adminId, 'status', 'risolto',  'chiuso',   '2024-01-07 16:00:00');
 
   // T10: aperto → in_corso → risolto → chiuso
-  insertHistory.run(t10Id, luciaId, 'aperto',   'in_corso', '2024-01-03 10:00:00');
-  insertHistory.run(t10Id, luciaId, 'in_corso', 'risolto',  '2024-01-04 17:00:00');
-  insertHistory.run(t10Id, adminId, 'risolto',  'chiuso',   '2024-01-04 18:00:00');
+  insertHistory.run(t10Id, luciaId, 'status', 'aperto',   'in_corso', '2024-01-03 10:00:00');
+  insertHistory.run(t10Id, luciaId, 'status', 'in_corso', 'risolto',  '2024-01-04 17:00:00');
+  insertHistory.run(t10Id, adminId, 'status', 'risolto',  'chiuso',   '2024-01-04 18:00:00');
 
   // ── Ratings (solo ticket chiusi: t9, t10) ────────────────────────────────────
   const insertRating = db.prepare(`

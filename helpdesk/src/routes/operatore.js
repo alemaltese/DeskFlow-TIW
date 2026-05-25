@@ -136,7 +136,7 @@ router.get('/operatore/tickets/:id', requireOperatore, (req, res) => {
     FROM status_history sh
     JOIN users u ON sh.changed_by = u.id
     WHERE sh.ticket_id = ?
-    ORDER BY sh.created_at ASC
+    ORDER BY sh.changed_at ASC
   `).all(ticketId);
 
   const rating = db.prepare('SELECT * FROM ratings WHERE ticket_id = ?').get(ticketId);
@@ -176,8 +176,8 @@ router.post('/operatore/tickets/:id/status', requireOperatore, (req, res) => {
   const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
   db.prepare(`UPDATE tickets SET status = ?, updated_at = ? WHERE id = ?`).run(new_status, now, ticketId);
   db.prepare(`
-    INSERT INTO status_history (ticket_id, changed_by, old_status, new_status, created_at)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO status_history (ticket_id, changed_by, event_type, old_value, new_value, changed_at)
+    VALUES (?, ?, 'status', ?, ?, ?)
   `).run(ticketId, req.session.user.id, ticket.status, new_status, now);
 
   req.setFlash('success', `Stato aggiornato a "${new_status}".`);

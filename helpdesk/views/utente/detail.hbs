@@ -1,44 +1,49 @@
-{{!-- ── Header ── --}}
-<div class="card">
-  <div class="card-header">
-    <div>
-      <h1>{{ticket.title}}</h1>
-      <div style="display:flex; flex-wrap:wrap; gap:0.5rem; align-items:center; margin-top:0.5rem;">
-        <span class="badge badge-{{ticket.status}}">{{capitalize ticket.status}}</span>
-        <span class="badge badge-{{ticket.priority}}">{{capitalize ticket.priority}}</span>
-        <span class="text-muted">· {{capitalize ticket.category}}</span>
-        <span class="text-muted">· aperto il {{formatDate ticket.created_at}}</span>
-        {{#if ticket.operator_name}}
-          <span class="text-muted">· Operatore: <strong>{{ticket.operator_name}}</strong></span>
-        {{/if}}
-      </div>
-    </div>
-    <a href="/tickets" class="btn btn-secondary btn-sm" style="white-space:nowrap;">← I miei ticket</a>
-  </div>
+<div style="margin-bottom:1rem;">
+  <a href="/tickets" class="btn btn-secondary btn-sm">← I miei ticket</a>
+</div>
 
-  <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:1rem 1.25rem; margin-top:0.5rem;">
-    <p style="color:#1e293b; white-space:pre-wrap;">{{ticket.description}}</p>
+<div class="ticket-hero">
+  <div class="ticket-hero-badges">
+    <span class="badge badge-{{ticket.status}}">{{ticket.status}}</span>
+    <span class="badge badge-{{ticket.priority}}">{{ticket.priority}}</span>
+    <span class="badge badge-category">{{ticket.category}}</span>
+  </div>
+  <h1 class="ticket-hero-title">{{ticket.title}}</h1>
+  <div class="ticket-hero-meta">
+    Aperto il {{formatDate ticket.created_at}} da <strong>{{ticket.user_name}}</strong>
+    {{#if ticket.operator_name}}· Assegnato a <strong>{{ticket.operator_name}}</strong>{{/if}}
+  </div>
+  <div class="ticket-hero-description">
+    <p>{{ticket.description}}</p>
   </div>
 </div>
 
-{{!-- ── Storico stati ── --}}
+{{!-- ── Storico ── --}}
 {{#if history.length}}
 <div class="card">
   <h2>Storico</h2>
   <ul class="timeline">
     {{#each history}}
     <li class="timeline-item">
-      <span class="timeline-dot dot-{{this.new_status}}"></span>
-      <div class="timeline-content">
-        {{#if this.old_status}}
-          <strong>{{this.changed_by_name}}</strong> ha cambiato lo stato
-          da <em>{{this.old_status}}</em> a <em>{{this.new_status}}</em>
-        {{else}}
-          <strong>{{this.changed_by_name}}</strong> ha aperto il ticket
-          con stato <em>{{this.new_status}}</em>
-        {{/if}}
-        <div class="timeline-meta">{{formatDate this.created_at}}</div>
-      </div>
+      {{#if (eq this.event_type "status")}}
+        <span class="timeline-dot dot-{{this.new_value}}"></span>
+        <div class="timeline-content">
+          ● Stato: {{this.old_value}} → {{this.new_value}}
+          <div class="timeline-meta">{{formatDate this.changed_at}} · {{this.changed_by_name}}</div>
+        </div>
+      {{else if (eq this.event_type "priority")}}
+        <span class="timeline-dot" style="background:#f59e0b;box-shadow:0 0 0 2px #fff,0 0 0 4px #f59e0b;"></span>
+        <div class="timeline-content">
+          ⚡ Priorità: {{this.old_value}} → {{this.new_value}}
+          <div class="timeline-meta">{{formatDate this.changed_at}} · {{this.changed_by_name}}</div>
+        </div>
+      {{else}}
+        <span class="timeline-dot" style="background:#7c3aed;box-shadow:0 0 0 2px #fff,0 0 0 4px #7c3aed;"></span>
+        <div class="timeline-content">
+          👤 Assegnato a: {{this.new_value}}
+          <div class="timeline-meta">{{formatDate this.changed_at}} · {{this.changed_by_name}}</div>
+        </div>
+      {{/if}}
     </li>
     {{/each}}
   </ul>

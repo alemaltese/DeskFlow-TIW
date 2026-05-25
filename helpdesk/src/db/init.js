@@ -46,9 +46,10 @@ const createTables = db.transaction(() => {
       id          INTEGER PRIMARY KEY AUTOINCREMENT,
       ticket_id   INTEGER NOT NULL REFERENCES tickets(id),
       changed_by  INTEGER NOT NULL REFERENCES users(id),
-      old_status  TEXT NOT NULL,
-      new_status  TEXT NOT NULL,
-      created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+      event_type  TEXT NOT NULL DEFAULT 'status',
+      old_value   TEXT,
+      new_value   TEXT NOT NULL,
+      changed_at  DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS ratings (

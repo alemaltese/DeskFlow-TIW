@@ -59,8 +59,8 @@ router.post('/tickets', requireUtente, (req, res) => {
   `).run(req.session.user.id, title.trim(), description.trim(), category, priority);
 
   db.prepare(`
-    INSERT INTO status_history (ticket_id, changed_by, old_status, new_status)
-    VALUES (?, ?, '', 'aperto')
+    INSERT INTO status_history (ticket_id, changed_by, event_type, old_value, new_value)
+    VALUES (?, ?, 'status', '', 'aperto')
   `).run(result.lastInsertRowid, req.session.user.id);
 
   req.setFlash('success', 'Ticket aperto con successo!');
@@ -98,7 +98,7 @@ router.get('/tickets/:id', requireUtente, (req, res) => {
     FROM status_history sh
     JOIN users u ON sh.changed_by = u.id
     WHERE sh.ticket_id = ?
-    ORDER BY sh.created_at ASC
+    ORDER BY sh.changed_at ASC
   `).all(ticketId);
 
   const rating = db.prepare('SELECT * FROM ratings WHERE ticket_id = ?').get(ticketId);
@@ -164,8 +164,8 @@ router.post('/tickets/:id/chiudi', requireUtente, (req, res) => {
 
   db.prepare(`UPDATE tickets SET status = 'chiuso', updated_at = ? WHERE id = ?`).run(now, ticketId);
   db.prepare(`
-    INSERT INTO status_history (ticket_id, changed_by, old_status, new_status, created_at)
-    VALUES (?, ?, 'risolto', 'chiuso', ?)
+    INSERT INTO status_history (ticket_id, changed_by, event_type, old_value, new_value, changed_at)
+    VALUES (?, ?, 'status', 'risolto', 'chiuso', ?)
   `).run(ticketId, req.session.user.id, now);
 
   const score = parseInt(req.body.score, 10);
@@ -197,8 +197,8 @@ router.post('/tickets/:id/riapri', requireUtente, (req, res) => {
 
   db.prepare(`UPDATE tickets SET status = 'aperto', updated_at = ? WHERE id = ?`).run(now, ticketId);
   db.prepare(`
-    INSERT INTO status_history (ticket_id, changed_by, old_status, new_status, created_at)
-    VALUES (?, ?, 'chiuso', 'aperto', ?)
+    INSERT INTO status_history (ticket_id, changed_by, event_type, old_value, new_value, changed_at)
+    VALUES (?, ?, 'status', 'chiuso', 'aperto', ?)
   `).run(ticketId, req.session.user.id, now);
 
   req.setFlash('success', 'Ticket riaperto con successo.');

@@ -36,6 +36,9 @@ app.engine('hbs', engine({
       const s = String(str);
       return s.charAt(0).toUpperCase() + s.slice(1);
     },
+    ifEq(a, b, options) {
+      return String(a) === String(b) ? options.fn(this) : options.inverse(this);
+    },
   },
 }));
 app.set('view engine', 'hbs');

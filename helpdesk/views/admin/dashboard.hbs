@@ -1,38 +1,11 @@
 <h1>Admin Dashboard</h1>
 
-<div class="kpi-grid" style="margin-bottom:2rem;">
-  <div class="kpi-card">
-    <div class="kpi-number">{{counts.total}}</div>
-    <div class="kpi-label">Ticket totali</div>
-  </div>
-  <div class="kpi-card">
-    <div class="kpi-number">{{counts.aperto}}</div>
-    <div class="kpi-label">Aperti</div>
-  </div>
-  <div class="kpi-card">
-    <div class="kpi-number">{{counts.in_corso}}</div>
-    <div class="kpi-label">In lavorazione</div>
-  </div>
-  <div class="kpi-card">
-    <div class="kpi-number">{{counts.risolto}}</div>
-    <div class="kpi-label">Risolti</div>
-  </div>
-  <div class="kpi-card">
-    <div class="kpi-number">{{counts.chiuso}}</div>
-    <div class="kpi-label">Chiusi</div>
-  </div>
-  <div class="kpi-card">
-    <div class="kpi-number">{{userCounts.utenti}}</div>
-    <div class="kpi-label">Utenti</div>
-  </div>
-  <div class="kpi-card">
-    <div class="kpi-number">{{userCounts.operatori}}</div>
-    <div class="kpi-label">Operatori</div>
-  </div>
-  <div class="kpi-card">
-    <div class="kpi-number">{{unassigned.length}}</div>
-    <div class="kpi-label">Non assegnati</div>
-  </div>
+<div class="kpi-grid">
+  <div class="kpi-card blue"><div class="kpi-value">{{counts.aperto}}</div><div class="kpi-label">Aperti</div></div>
+  <div class="kpi-card amber"><div class="kpi-value">{{counts.in_corso}}</div><div class="kpi-label">In corso</div></div>
+  <div class="kpi-card green"><div class="kpi-value">{{counts.risolto}}</div><div class="kpi-label">Risolti</div></div>
+  <div class="kpi-card slate"><div class="kpi-value">{{counts.chiuso}}</div><div class="kpi-label">Chiusi</div></div>
+  <div class="kpi-card purple"><div class="kpi-value">{{unassigned.length}}</div><div class="kpi-label">Non assegnati</div></div>
 </div>
 
 <div class="two-col-layout">

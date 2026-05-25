@@ -2,22 +2,10 @@
 
 {{!-- ── KPI grid ── --}}
 <div class="kpi-grid">
-  <div class="kpi-card kpi-aperto">
-    <span class="kpi-number">{{counts.aperto}}</span>
-    <span class="kpi-label">Aperti</span>
-  </div>
-  <div class="kpi-card kpi-in_corso">
-    <span class="kpi-number">{{counts.in_corso}}</span>
-    <span class="kpi-label">In corso</span>
-  </div>
-  <div class="kpi-card kpi-risolto">
-    <span class="kpi-number">{{counts.risolto}}</span>
-    <span class="kpi-label">Risolti</span>
-  </div>
-  <div class="kpi-card kpi-chiuso">
-    <span class="kpi-number">{{counts.chiuso}}</span>
-    <span class="kpi-label">Chiusi</span>
-  </div>
+  <div class="kpi-card blue"><div class="kpi-value">{{counts.aperto}}</div><div class="kpi-label">Aperti</div></div>
+  <div class="kpi-card amber"><div class="kpi-value">{{counts.in_corso}}</div><div class="kpi-label">In corso</div></div>
+  <div class="kpi-card green"><div class="kpi-value">{{counts.risolto}}</div><div class="kpi-label">Risolti</div></div>
+  <div class="kpi-card slate"><div class="kpi-value">{{counts.chiuso}}</div><div class="kpi-label">Chiusi</div></div>
 </div>
 
 {{!-- ── Ticket attivi ── --}}

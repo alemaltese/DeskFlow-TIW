@@ -34,7 +34,10 @@ router.post('/login', async (req, res) => {
   const returnTo = req.session.returnTo || null;
   delete req.session.returnTo;
 
-  if (user.role === 'admin' || user.role === 'operatore') {
+  if (user.role === 'admin') {
+    return res.redirect(returnTo || '/admin/dashboard');
+  }
+  if (user.role === 'operatore') {
     return res.redirect(returnTo || '/operatore/dashboard');
   }
   res.redirect(returnTo || '/tickets');
