@@ -6,18 +6,20 @@ const path = require('path');
 
 require('./db/db');
 
-const authRouter     = require('./routes/auth');
-const ticketsRouter  = require('./routes/tickets');
-const operatoreRouter = require('./routes/operatore');
-const adminRouter    = require('./routes/admin');
-const statsRouter    = require('./routes/stats');
+const flashMiddleware  = require('./middleware/flash');
+const authRouter       = require('./routes/auth');
+const ticketsRouter    = require('./routes/tickets');
+const operatoreRouter  = require('./routes/operatore');
+const adminRouter      = require('./routes/admin');
+const statsRouter      = require('./routes/stats');
 
 const app = express();
 
 // ── Handlebars ─────────────────────────────────────────────────────────────
 app.engine('hbs', engine({
   extname: '.hbs',
-  layoutsDir: path.join(__dirname, '../views/layouts'),
+  layoutsDir:   path.join(__dirname, '../views/layouts'),
+  partialsDir:  path.join(__dirname, '../views/partials'),
   defaultLayout: 'main',
   helpers: {
     formatDate(dateStr) {
@@ -57,12 +59,7 @@ app.use(session({
 }));
 
 // ── Flash ──────────────────────────────────────────────────────────────────
-app.use((req, res, next) => {
-  res.locals.flash = req.session.flash || null;
-  delete req.session.flash;
-  req.setFlash = (type, message) => { req.session.flash = { type, message }; };
-  next();
-});
+app.use(flashMiddleware);
 
 // ── Current user in locals (navbar) ───────────────────────────────────────
 app.use((req, res, next) => {
@@ -70,6 +67,7 @@ app.use((req, res, next) => {
   res.locals.currentUser  = u;
   res.locals.isOperatore  = u && (u.role === 'operatore' || u.role === 'admin');
   res.locals.isAdmin      = u && u.role === 'admin';
+  res.locals.currentYear  = new Date().getFullYear();
   next();
 });
 
@@ -87,6 +85,16 @@ app.use('/', statsRouter);
 // ── 404 ────────────────────────────────────────────────────────────────────
 app.use((req, res) => {
   res.status(404).render('error', { title: 'Pagina non trovata', message: 'La pagina richiesta non esiste.' });
+});
+
+// ── 500 ────────────────────────────────────────────────────────────────────
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, _next) => {
+  console.error('[500]', err);
+  res.status(500).render('error', {
+    title: 'Errore interno',
+    message: 'Si è verificato un errore interno del server.',
+  });
 });
 
 app.listen(3000, () => {
