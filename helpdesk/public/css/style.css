@@ -601,6 +601,56 @@ tr:hover td {
   margin: 2rem auto;
 }
 
+.auth-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.auth-tabs {
+  display: flex;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.auth-tab {
+  flex: 1;
+  padding: 0.85rem 1rem;
+  background: #f8fafc;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  font-family: inherit;
+}
+
+.auth-tab:first-child {
+  border-right: 1px solid #e2e8f0;
+}
+
+.auth-tab:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.auth-tab--active {
+  background: #fff;
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+}
+
+.auth-panel {
+  padding: 1.5rem 1.5rem 1.25rem;
+}
+
+.auth-switch {
+  margin-top: 1.25rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
 /* ── Responsive tables ────────────────────────────────── */
 .table-wrap {
   overflow-x: auto;
@@ -852,3 +902,26 @@ tr:hover td {
 
 /* ── Input disabilitato (profilo admin) ───────────────── */
 .input-disabled { background: #f1f5f9 !important; color: #64748b; cursor: not-allowed; border-color: #e2e8f0; }
+
+/* ── Password toggle ──────────────────────────────────── */
+.pw-wrap {
+  position: relative;
+}
+.pw-wrap input {
+  padding-right: 2.5rem;
+}
+.pw-toggle {
+  position: absolute;
+  right: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #94a3b8;
+  padding: 0.2rem;
+  display: flex;
+  align-items: center;
+  line-height: 1;
+}
+.pw-toggle:hover { color: #475569; }

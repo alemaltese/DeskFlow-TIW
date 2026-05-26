@@ -1,0 +1,45 @@
+<div class="auth-wrap">
+  <div class="card auth-card">
+
+    <div class="auth-tabs">
+      <button type="button" class="auth-tab auth-tab--active">Accedi</button>
+      <a href="/register" class="auth-tab">Registrati</a>
+    </div>
+
+    <div class="auth-panel">
+      <p class="text-muted" style="margin-bottom:1.25rem;">Inserisci le tue credenziali per continuare.</p>
+
+      {{#if error}}
+      <div class="flash flash-error">{{error}}</div>
+      {{/if}}
+
+      <form action="/login" method="POST">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" value="{{old.email}}"
+                 required autocomplete="email" autofocus>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="pw-wrap">
+            <input type="password" id="password" name="password"
+                   required autocomplete="current-password">
+            <button type="button" class="pw-toggle" onclick="togglePw(this)" tabindex="-1" aria-label="Mostra password">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:0.5rem;">
+          Accedi
+        </button>
+      </form>
+
+      <p class="auth-switch">
+        Non hai un account? <a href="/register">Registrati</a>
+      </p>
+    </div>
+
+  </div>
+</div>

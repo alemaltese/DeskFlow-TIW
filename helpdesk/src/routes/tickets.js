@@ -22,6 +22,9 @@ router.get('/tickets', requireUtente, (req, res) => {
 
 // ── GET /tickets/new ───────────────────────────────────────────────────────
 router.get('/tickets/new', requireUtente, (req, res) => {
+  if (req.session.user.role !== 'utente') {
+    return res.status(403).render('error', { title: 'Accesso negato', message: 'Solo gli utenti possono aprire ticket.' });
+  }
   res.render('utente/new', {
     title: 'Apri nuovo ticket',
     categories: CATEGORIES,
@@ -31,6 +34,9 @@ router.get('/tickets/new', requireUtente, (req, res) => {
 
 // ── POST /tickets ──────────────────────────────────────────────────────────
 router.post('/tickets', requireUtente, (req, res) => {
+  if (req.session.user.role !== 'utente') {
+    return res.status(403).render('error', { title: 'Accesso negato', message: 'Solo gli utenti possono aprire ticket.' });
+  }
   const { title, description, category, priority } = req.body;
   const errors = [];
 
@@ -207,11 +213,17 @@ router.post('/tickets/:id/riapri', requireUtente, (req, res) => {
 
 // ── GET /profilo ───────────────────────────────────────────────────────────
 router.get('/profilo', requireUtente, (req, res) => {
+  if (req.session.user.role !== 'utente') {
+    return res.redirect(`/${req.session.user.role}/profilo`);
+  }
   res.render('utente/profilo', { title: 'Il mio profilo', user: req.session.user });
 });
 
 // ── POST /profilo ──────────────────────────────────────────────────────────
 router.post('/profilo', requireUtente, async (req, res) => {
+  if (req.session.user.role !== 'utente') {
+    return res.status(403).render('error', { title: 'Accesso negato', message: 'Operazione non consentita.' });
+  }
   const { name, email, old_password, new_password, confirm_password } = req.body;
 
   if (!name || !name.trim()) {

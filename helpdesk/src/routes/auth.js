@@ -1,32 +1,32 @@
-'use strict';
+﻿'use strict';
 const express = require('express');
 const bcrypt = require('bcrypt');
 const db = require('../db/db');
 
 const router = express.Router();
 
-// ── GET /login ─────────────────────────────────────────────────────────────
+// â”€â”€ GET /login â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 router.get('/login', (req, res) => {
   if (req.session.user) return res.redirect('/');
-  res.render('login', { title: 'Accedi' });
+  res.render('auth/login', { title: 'Accedi' });
 });
 
-// ── POST /login ────────────────────────────────────────────────────────────
+// â”€â”€ POST /login â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res.render('login', { title: 'Accedi', error: 'Compila tutti i campi.', old: { email } });
+    return res.render('auth/login', { title: 'Accedi', error: 'Compila tutti i campi.', old: { email } });
   }
 
   const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email.trim().toLowerCase());
   if (!user) {
-    return res.render('login', { title: 'Accedi', error: 'Credenziali non valide.', old: { email } });
+    return res.render('auth/login', { title: 'Accedi', error: 'Credenziali non valide.', old: { email } });
   }
 
   const match = await bcrypt.compare(password, user.password_hash);
   if (!match) {
-    return res.render('login', { title: 'Accedi', error: 'Credenziali non valide.', old: { email } });
+    return res.render('auth/login', { title: 'Accedi', error: 'Credenziali non valide.', old: { email } });
   }
 
   req.session.user = { id: user.id, name: user.name, email: user.email, role: user.role };
@@ -43,29 +43,29 @@ router.post('/login', async (req, res) => {
   res.redirect(returnTo || '/tickets');
 });
 
-// ── GET /register ──────────────────────────────────────────────────────────
+// â”€â”€ GET /register â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 router.get('/register', (req, res) => {
   if (req.session.user) return res.redirect('/');
-  res.render('register', { title: 'Registrati' });
+  res.render('auth/register', { title: 'Registrati' });
 });
 
-// ── POST /register ─────────────────────────────────────────────────────────
+// â”€â”€ POST /register â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 router.post('/register', async (req, res) => {
   const { name, email, password, confirm_password } = req.body;
   const errors = [];
 
-  if (!name || !name.trim())  errors.push('Il nome è obbligatorio.');
-  if (!email || !email.trim()) errors.push("L'email è obbligatoria.");
+  if (!name || !name.trim())  errors.push('Il nome Ã¨ obbligatorio.');
+  if (!email || !email.trim()) errors.push("L'email Ã¨ obbligatoria.");
   if (!password || password.length < 6) errors.push('La password deve essere di almeno 6 caratteri.');
   if (password !== confirm_password) errors.push('Le password non coincidono.');
 
   if (errors.length) {
-    return res.render('register', { title: 'Registrati', errors, old: { name, email } });
+    return res.render('auth/register', { title: 'Registrati', errors, old: { name, email } });
   }
 
   const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email.trim().toLowerCase());
   if (existing) {
-    return res.render('register', {
+    return res.render('auth/register', {
       title: 'Registrati',
       errors: ['Email già registrata.'],
       old: { name, email },
@@ -88,7 +88,7 @@ router.post('/register', async (req, res) => {
   res.redirect('/tickets');
 });
 
-// ── GET /logout ────────────────────────────────────────────────────────────
+// â”€â”€ GET /logout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 router.get('/logout', (req, res) => {
   req.session.destroy(() => res.redirect('/login'));
 });

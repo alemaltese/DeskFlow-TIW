@@ -36,14 +36,28 @@
       {{#if isNew}}
       <div class="form-group">
         <label for="password">Password <span style="color:#e53e3e;">*</span></label>
-        <input type="password" id="password" name="password" minlength="6" required autocomplete="new-password">
+        <div class="pw-wrap">
+          <input type="password" id="password" name="password" minlength="6" required autocomplete="new-password">
+          <button type="button" class="pw-toggle" onclick="togglePw(this)" tabindex="-1" aria-label="Mostra password">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
       </div>
       {{else}}
       <h3 style="font-size:1rem; margin-bottom:0.75rem;">Cambia password</h3>
       <p class="text-muted" style="font-size:0.85rem; margin-bottom:1rem;">Lascia vuoto per mantenere la password attuale.</p>
       <div class="form-group">
         <label for="new_password">Nuova password</label>
-        <input type="password" id="new_password" name="new_password" minlength="6" autocomplete="new-password">
+        <div class="pw-wrap">
+          <input type="password" id="new_password" name="new_password" minlength="6" autocomplete="new-password">
+          <button type="button" class="pw-toggle" onclick="togglePw(this)" tabindex="-1" aria-label="Mostra password">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
       </div>
       {{/if}}
 
