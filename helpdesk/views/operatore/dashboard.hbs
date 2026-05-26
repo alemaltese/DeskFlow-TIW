@@ -25,6 +25,7 @@
         <th>Stato</th>
         <th>Utente</th>
         <th>Aperto il</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
@@ -36,6 +37,7 @@
         <td><span class="badge badge-{{this.status}}">{{capitalize this.status}}</span></td>
         <td>{{this.user_name}}</td>
         <td class="text-muted">{{formatDate this.created_at}}</td>
+        <td><a href="/operatore/tickets/{{this.id}}" class="btn btn-primary btn-sm">Gestisci</a></td>
       </tr>
       {{/each}}
     </tbody>

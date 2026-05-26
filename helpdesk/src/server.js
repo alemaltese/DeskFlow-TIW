@@ -73,7 +73,11 @@ app.use((req, res, next) => {
 
 // ── Routes ─────────────────────────────────────────────────────────────────
 app.get('/', (req, res) => {
-  res.render('home', { title: 'Helpdesk' });
+  const u = req.session.user;
+  if (!u) return res.render('home', { title: 'Helpdesk' });
+  if (u.role === 'admin')     return res.redirect('/admin/dashboard');
+  if (u.role === 'operatore') return res.redirect('/operatore/dashboard');
+  return res.redirect('/tickets');
 });
 
 app.use('/', authRouter);

@@ -65,6 +65,7 @@
         <th>Priorità</th>
         <th>Stato</th>
         <th>Data</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
@@ -77,6 +78,7 @@
         <td><span class="badge badge-{{this.priority}}">{{capitalize this.priority}}</span></td>
         <td><span class="badge badge-{{this.status}}">{{capitalize this.status}}</span></td>
         <td class="text-muted">{{formatDate this.created_at}}</td>
+        <td><a href="/operatore/tickets/{{this.id}}" class="btn btn-primary btn-sm">Gestisci</a></td>
       </tr>
       {{/each}}
     </tbody>

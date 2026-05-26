@@ -1,30 +1,22 @@
-<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.75rem;">
+<div style="margin-bottom:1.5rem;">
   <h1>Dashboard Analytics</h1>
-  <form method="GET" action="/admin/stats" style="display:flex; align-items:center; gap:0.5rem;">
-    <label style="font-size:0.875rem; color:#64748b;">Ultimi</label>
-    <select name="days" onchange="this.form.submit()" style="width:auto;">
-      <option value="7"  {{#if (eq days 7)}}selected{{/if}}>7 giorni</option>
-      <option value="30" {{#if (eq days 30)}}selected{{/if}}>30 giorni</option>
-      <option value="90" {{#if (eq days 90)}}selected{{/if}}>90 giorni</option>
-    </select>
-  </form>
 </div>
 
 {{!-- KPI --}}
 <div class="kpi-grid" style="margin-bottom:2rem;">
-  <div class="kpi-card">
+  <div class="kpi-card blue">
     <div class="kpi-number">{{kpi.totalTickets}}</div>
     <div class="kpi-label">Ticket aperti nel periodo</div>
   </div>
-  <div class="kpi-card">
+  <div class="kpi-card amber">
     <div class="kpi-number">{{#if kpi.avgFirstResponse}}{{kpi.avgFirstResponse}}h{{else}}—{{/if}}</div>
     <div class="kpi-label">Tempo medio prima risposta</div>
   </div>
-  <div class="kpi-card">
+  <div class="kpi-card green">
     <div class="kpi-number">{{#if kpi.avgResolution}}{{kpi.avgResolution}}h{{else}}—{{/if}}</div>
     <div class="kpi-label">Tempo medio risoluzione</div>
   </div>
-  <div class="kpi-card">
+  <div class="kpi-card purple">
     <div class="kpi-number">
       {{#if kpi.avgRating}}
         {{kpi.avgRating}}

@@ -89,24 +89,31 @@ router.get('/admin/stats', requireAdmin, (req, res) => {
   ).all();
   const byPriority = computeDistribution(byPriorityRaw, totalTickets);
 
-  // 5. Trend: ultimi 7 giorni con ticket presenti nel DB
+  // 5. Trend: ultimi 7 giorni di calendario (oggi − 6 giorni)
+  const last7Days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+    last7Days.push({
+      dateStr: d.toISOString().slice(0, 10),
+      label: d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' }),
+    });
+  }
+  const sevenDaysAgo = last7Days[0].dateStr;
   const trendRaw = db.prepare(`
-    SELECT DATE(created_at) as day, COUNT(*) as count
+    SELECT DATE(created_at) AS day, COUNT(*) AS count
     FROM tickets
+    WHERE DATE(created_at) >= ?
     GROUP BY DATE(created_at)
-    ORDER BY day DESC
-    LIMIT 7
-  `).all().reverse();
-
-  const maxCount = Math.max(...trendRaw.map(d => d.count), 1);
-  const trend = trendRaw.map(item => {
-    const d = new Date(item.day + 'T00:00:00');
-    return {
-      date: d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' }),
-      count: item.count,
-      heightPerc: Math.round((item.count / maxCount) * 100) || 4,
-    };
-  });
+  `).all(sevenDaysAgo);
+  const trendMap = {};
+  trendRaw.forEach(r => { trendMap[r.day] = r.count; });
+  const trendCounts = last7Days.map(d => trendMap[d.dateStr] || 0);
+  const maxCount = Math.max(...trendCounts, 1);
+  const trend = last7Days.map((d, i) => ({
+    date: d.label,
+    count: trendCounts[i],
+    heightPerc: Math.round((trendCounts[i] / maxCount) * 100) || 4,
+  }));
 
   // 6. Performance operatori senza filtro temporale
   const operatorPerf = db.prepare(`

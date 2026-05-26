@@ -613,6 +613,11 @@ tr:hover td {
 
 .auth-tab {
   flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  text-decoration: none;
   padding: 0.85rem 1rem;
   background: #f8fafc;
   border: none;
@@ -925,3 +930,13 @@ tr:hover td {
   line-height: 1;
 }
 .pw-toggle:hover { color: #475569; }
+
+/* ── Footer ───────────────────────────────────────────── */
+.footer {
+  text-align: center;
+  padding: 1.5rem 1rem;
+  margin-top: 2rem;
+  border-top: 1px solid #e2e8f0;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}

@@ -1,6 +1,14 @@
 <nav class="navbar">
   <div class="container">
-    <a href="/" class="nav-brand">Helpdesk</a>
+    {{#if isAdmin}}
+      <a href="/admin/dashboard" class="nav-brand">Helpdesk</a>
+    {{else if isOperatore}}
+      <a href="/operatore/dashboard" class="nav-brand">Helpdesk</a>
+    {{else if currentUser}}
+      <a href="/tickets" class="nav-brand">Helpdesk</a>
+    {{else}}
+      <a href="/" class="nav-brand">Helpdesk</a>
+    {{/if}}
     <div class="nav-links">
       {{#if currentUser}}
         {{#if isAdmin}}

@@ -5,9 +5,15 @@ const db = require('../db/db');
 
 const router = express.Router();
 
+function homeFor(role) {
+  if (role === 'admin') return '/admin/dashboard';
+  if (role === 'operatore') return '/operatore/dashboard';
+  return '/tickets';
+}
+
 // â”€â”€ GET /login â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 router.get('/login', (req, res) => {
-  if (req.session.user) return res.redirect('/');
+  if (req.session.user) return res.redirect(homeFor(req.session.user.role));
   res.render('auth/login', { title: 'Accedi' });
 });
 
@@ -45,7 +51,7 @@ router.post('/login', async (req, res) => {
 
 // â”€â”€ GET /register â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 router.get('/register', (req, res) => {
-  if (req.session.user) return res.redirect('/');
+  if (req.session.user) return res.redirect(homeFor(req.session.user.role));
   res.render('auth/register', { title: 'Registrati' });
 });
 
