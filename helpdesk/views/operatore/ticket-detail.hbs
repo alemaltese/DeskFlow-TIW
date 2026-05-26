@@ -125,6 +125,23 @@
 
       <hr style="border:none; border-top:1px solid #f1f5f9; margin:1.25rem 0;">
 
+      <h3 style="margin-bottom:0.75rem;">Aggiorna priorità</h3>
+      {{#if canEditPriority}}
+      <form action="/operatore/tickets/{{ticket.id}}/priority" method="POST">
+        <select name="new_priority" style="margin-bottom:0.75rem;">
+          <option value="bassa"   {{#if (eq ticket.priority 'bassa')}}selected{{/if}}>Bassa</option>
+          <option value="media"   {{#if (eq ticket.priority 'media')}}selected{{/if}}>Media</option>
+          <option value="alta"    {{#if (eq ticket.priority 'alta')}}selected{{/if}}>Alta</option>
+          <option value="urgente" {{#if (eq ticket.priority 'urgente')}}selected{{/if}}>Urgente</option>
+        </select>
+        <button type="submit" class="btn btn-secondary btn-sm" style="width:100%;">Aggiorna priorità</button>
+      </form>
+      {{else}}
+      <span style="font-size:13px;color:#94a3b8;">Priorità non modificabile (ticket {{ticket.status}})</span>
+      {{/if}}
+
+      <hr style="border:none; border-top:1px solid #f1f5f9; margin:1.25rem 0;">
+
       <div style="font-size:0.82rem; color:#64748b; line-height:1.7;">
         <div><strong>Stato attuale:</strong>
           <span class="badge badge-{{ticket.status}}" style="margin-left:0.25rem;">{{capitalize ticket.status}}</span>

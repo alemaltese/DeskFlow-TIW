@@ -52,6 +52,7 @@
 
       <div class="card" style="margin-top:1rem;">
         <h3>Priorità</h3>
+        {{#if canEditPriority}}
         <form action="/admin/tickets/{{ticket.id}}/priorita" method="POST" style="margin-top:0.5rem;">
           <select name="priority" style="width:100%; margin-bottom:0.5rem;">
             {{#each PRIORITIES}}
@@ -60,6 +61,9 @@
           </select>
           <button type="submit" class="btn btn-warning btn-sm" style="width:100%;">Aggiorna priorità</button>
         </form>
+        {{else}}
+        <span style="font-size:13px;color:#94a3b8;">Priorità non modificabile (ticket {{ticket.status}})</span>
+        {{/if}}
       </div>
 
       <div class="card" style="margin-top:1rem;">
@@ -73,8 +77,9 @@
           </select>
           <button type="submit" class="btn btn-secondary btn-sm" style="width:100%;">Assegna operatore</button>
         </form>
-        <form action="/admin/tickets/{{ticket.id}}/auto-assign" method="POST" style="margin-top:0.5rem;">
-          <button type="submit" class="btn btn-primary btn-sm" style="width:100%;">Auto-assegna</button>
+        <form action="/admin/tickets/{{ticket.id}}/auto-assign" method="POST" style="margin-top:8px;">
+          <button type="submit" class="btn btn-secondary btn-sm">⚡ Auto-assegna</button>
+          <span style="font-size:11px;color:#94a3b8;margin-left:6px;">Assegna all'operatore con meno ticket attivi</span>
         </form>
       </div>
 

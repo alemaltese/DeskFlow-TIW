@@ -45,7 +45,6 @@ function buildTrend(filterSql, params) {
 
 // ── Admin analytics ─────────────────────────────────────────────────────────
 router.get('/admin/stats', requireAdmin, (req, res) => {
-  const overdueSince = isoNow(-48 * 60 * 60 * 1000);
 
   // 1. KPI – tutti i ticket senza filtro temporale
   const totalTickets = db.prepare(`SELECT COUNT(*) AS cnt FROM tickets`).get().cnt;
@@ -89,31 +88,26 @@ router.get('/admin/stats', requireAdmin, (req, res) => {
   ).all();
   const byPriority = computeDistribution(byPriorityRaw, totalTickets);
 
-  // 5. Trend: ultimi 7 giorni di calendario (oggi − 6 giorni)
-  const last7Days = [];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
-    last7Days.push({
-      dateStr: d.toISOString().slice(0, 10),
-      label: d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' }),
-    });
-  }
-  const sevenDaysAgo = last7Days[0].dateStr;
-  const trendRaw = db.prepare(`
-    SELECT DATE(created_at) AS day, COUNT(*) AS count
-    FROM tickets
-    WHERE DATE(created_at) >= ?
-    GROUP BY DATE(created_at)
-  `).all(sevenDaysAgo);
-  const trendMap = {};
-  trendRaw.forEach(r => { trendMap[r.day] = r.count; });
-  const trendCounts = last7Days.map(d => trendMap[d.dateStr] || 0);
-  const maxCount = Math.max(...trendCounts, 1);
-  const trend = last7Days.map((d, i) => ({
-    date: d.label,
-    count: trendCounts[i],
-    heightPerc: Math.round((trendCounts[i] / maxCount) * 100) || 4,
-  }));
+  // 5. Workload operatori
+  const workload = db.prepare(`
+    SELECT
+      u.name,
+      COUNT(t.id) as totale,
+      SUM(CASE WHEN t.status IN ('aperto','in_corso') THEN 1 ELSE 0 END) as attivi,
+      SUM(CASE WHEN t.status = 'risolto' THEN 1 ELSE 0 END) as risolti,
+      SUM(CASE WHEN t.status = 'chiuso' THEN 1 ELSE 0 END) as chiusi
+    FROM users u
+    LEFT JOIN tickets t ON t.assigned_to = u.id
+    WHERE u.role = 'operatore'
+    GROUP BY u.id, u.name
+    ORDER BY attivi DESC
+  `).all();
+
+  const maxAttivi = Math.max(...workload.map(w => w.attivi || 0), 1);
+  workload.forEach(w => {
+    w.attiviPerc  = Math.round(((w.attivi  || 0) / maxAttivi) * 100) || 4;
+    w.risoltiPerc = Math.round(((w.risolti || 0) / maxAttivi) * 100) || 4;
+  });
 
   // 6. Performance operatori senza filtro temporale
   const operatorPerf = db.prepare(`
@@ -135,18 +129,22 @@ router.get('/admin/stats', requireAdmin, (req, res) => {
       : null;
   });
 
-  // 7. Ticket scaduti
-  const overdueCount = db.prepare(
-    `SELECT COUNT(*) AS cnt FROM tickets WHERE status IN ('aperto', 'in_corso') AND created_at < ?`
-  ).get(overdueSince).cnt;
+  // 7. Tasso di risoluzione per categoria
+  const tassoCategoria = db.prepare(`
+    SELECT
+      category,
+      COUNT(*) as totale,
+      SUM(CASE WHEN status IN ('risolto','chiuso') THEN 1 ELSE 0 END) as risolti,
+      SUM(CASE WHEN status IN ('aperto','in_corso') THEN 1 ELSE 0 END) as aperti
+    FROM tickets
+    GROUP BY category
+    ORDER BY totale DESC
+  `).all();
 
-  const overdueList = db.prepare(`
-    SELECT t.id, t.title, t.priority, t.status, t.created_at, u.name AS user_name
-    FROM tickets t JOIN users u ON u.id = t.user_id
-    WHERE t.status IN ('aperto', 'in_corso') AND t.created_at < ?
-    ORDER BY t.created_at ASC
-    LIMIT 5
-  `).all(overdueSince);
+  tassoCategoria.forEach(c => {
+    c.tassoPerc = c.totale > 0 ? Math.round((c.risolti / c.totale) * 100) : 0;
+    c.colore = c.tassoPerc >= 75 ? '#22c55e' : c.tassoPerc >= 40 ? '#f59e0b' : '#ef4444';
+  });
 
   const avgRatingVal = avgRating ? Math.round(avgRating) : null;
   const avgRatingStars = avgRatingVal ? [1,2,3,4,5].map(n => n <= avgRatingVal) : null;
@@ -163,10 +161,9 @@ router.get('/admin/stats', requireAdmin, (req, res) => {
     byCategory: byCategory || [],
     byStatus: byStatus || [],
     byPriority: byPriority || [],
-    trend: trend || [],
+    workload: workload || [],
     operatorPerf: operatorPerf || [],
-    overdueCount,
-    overdueList: overdueList || [],
+    tassoCategoria: tassoCategoria || [],
   });
 });
 

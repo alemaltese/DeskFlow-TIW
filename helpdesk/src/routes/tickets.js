@@ -3,6 +3,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const db = require('../db/db');
 const { requireUtente } = require('../middleware/auth');
+const { getOperatorWithFewestTickets } = require('../helpers/operators');
 
 const router = express.Router();
 
@@ -59,10 +60,12 @@ router.post('/tickets', requireUtente, (req, res) => {
     });
   }
 
+  const operatorId = getOperatorWithFewestTickets();
+
   const result = db.prepare(`
-    INSERT INTO tickets (user_id, title, description, category, priority, status)
-    VALUES (?, ?, ?, ?, ?, 'aperto')
-  `).run(req.session.user.id, title.trim(), description.trim(), category, priority);
+    INSERT INTO tickets (user_id, title, description, category, priority, status, assigned_to)
+    VALUES (?, ?, ?, ?, ?, 'aperto', ?)
+  `).run(req.session.user.id, title.trim(), description.trim(), category, priority, operatorId);
 
   db.prepare(`
     INSERT INTO status_history (ticket_id, changed_by, event_type, old_value, new_value)

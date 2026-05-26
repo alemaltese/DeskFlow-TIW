@@ -150,6 +150,7 @@ router.get('/operatore/tickets/:id', requireOperatore, (req, res) => {
     comments,
     history,
     rating,
+    canEditPriority: !['risolto', 'chiuso'].includes(ticket.status),
   });
 });
 
@@ -181,6 +182,42 @@ router.post('/operatore/tickets/:id/status', requireOperatore, (req, res) => {
   `).run(ticketId, req.session.user.id, ticket.status, new_status, now);
 
   req.setFlash('success', `Stato aggiornato a "${new_status}".`);
+  res.redirect(`/operatore/tickets/${ticketId}`);
+});
+
+// ── POST /operatore/tickets/:id/priority ───────────────────────────────────
+router.post('/operatore/tickets/:id/priority', requireOperatore, (req, res) => {
+  const ticketId = parseInt(req.params.id, 10);
+  const ticket = db.prepare('SELECT * FROM tickets WHERE id = ?').get(ticketId);
+
+  if (!ticket || ticket.assigned_to !== req.session.user.id) {
+    return res.status(403).render('error', { title: 'Accesso negato', message: 'Operazione non consentita.' });
+  }
+
+  const { new_priority } = req.body;
+  if (!VALID_PRIORITY.includes(new_priority)) {
+    req.setFlash('error', 'Priorità non valida.');
+    return res.redirect(`/operatore/tickets/${ticketId}`);
+  }
+
+  if (['risolto', 'chiuso'].includes(ticket.status)) {
+    req.setFlash('error', 'Non è possibile modificare la priorità di un ticket già risolto o chiuso.');
+    return res.redirect(`/operatore/tickets/${ticketId}`);
+  }
+
+  if (ticket.priority === new_priority) {
+    req.setFlash('info', 'Il ticket ha già questa priorità.');
+    return res.redirect(`/operatore/tickets/${ticketId}`);
+  }
+
+  const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
+  db.prepare('UPDATE tickets SET priority = ?, updated_at = ? WHERE id = ?').run(new_priority, now, ticketId);
+  db.prepare(`
+    INSERT INTO status_history (ticket_id, changed_by, event_type, old_value, new_value, changed_at)
+    VALUES (?, ?, 'priority', ?, ?, ?)
+  `).run(ticketId, req.session.user.id, ticket.priority, new_priority, now);
+
+  req.setFlash('success', `Priorità aggiornata a "${new_priority}".`);
   res.redirect(`/operatore/tickets/${ticketId}`);
 });
 

@@ -3,6 +3,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const db = require('../db/db');
 const { requireAdmin } = require('../middleware/auth');
+const { getOperatorWithFewestTickets } = require('../helpers/operators');
 
 const router = express.Router();
 router.use(requireAdmin);
@@ -10,19 +11,6 @@ router.use(requireAdmin);
 const CATEGORIES = ['tecnico', 'account', 'fatturazione', 'altro'];
 const PRIORITIES = ['bassa', 'media', 'alta', 'urgente'];
 const STATUSES   = ['aperto', 'in_corso', 'risolto', 'chiuso'];
-
-function getOperatorWithFewestTickets() {
-  return db.prepare(`
-    SELECT users.id, COUNT(tickets.id) AS cnt
-    FROM users
-    LEFT JOIN tickets ON tickets.assigned_to = users.id
-      AND tickets.status NOT IN ('risolto', 'chiuso')
-    WHERE users.role = 'operatore'
-    GROUP BY users.id
-    ORDER BY cnt ASC, users.id ASC
-    LIMIT 1
-  `).get();
-}
 
 // ── Dashboard ──────────────────────────────────────────────────────────────
 router.get('/admin/dashboard', (req, res) => {
@@ -158,6 +146,7 @@ router.get('/admin/tickets/:id', (req, res) => {
     title: `Ticket #${ticket.id}`,
     ticket, comments, history, operators, rating,
     STATUSES, PRIORITIES,
+    canEditPriority: !['risolto', 'chiuso'].includes(ticket.status),
   });
 });
 
@@ -214,6 +203,11 @@ router.post('/admin/tickets/:id/priorita', (req, res) => {
   const ticket = db.prepare('SELECT * FROM tickets WHERE id = ?').get(req.params.id);
   if (!ticket) return res.status(404).render('error', { title: 'Ticket non trovato', message: '' });
 
+  if (['risolto', 'chiuso'].includes(ticket.status)) {
+    req.setFlash('error', 'Non è possibile modificare la priorità di un ticket già risolto o chiuso.');
+    return res.redirect(`/admin/tickets/${req.params.id}`);
+  }
+
   db.prepare('UPDATE tickets SET priority = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
     .run(priority, req.params.id);
 
@@ -240,24 +234,22 @@ router.post('/admin/tickets/:id/auto-assign', (req, res) => {
   const ticket = db.prepare('SELECT * FROM tickets WHERE id = ?').get(req.params.id);
   if (!ticket) return res.status(404).render('error', { title: 'Ticket non trovato', message: '' });
 
-  const op = getOperatorWithFewestTickets();
-  if (!op) {
-    req.setFlash('error', 'Nessun operatore disponibile.');
+  const operatorId = getOperatorWithFewestTickets();
+  if (!operatorId) {
+    req.setFlash('error', 'Nessun operatore disponibile nel sistema.');
     return res.redirect(`/admin/tickets/${ticket.id}`);
   }
 
   const oldOp = ticket.assigned_to
     ? db.prepare('SELECT name FROM users WHERE id = ?').get(ticket.assigned_to)
     : null;
-  const oldOpName = oldOp ? oldOp.name : 'Non assegnato';
-  const newOpUser = db.prepare('SELECT name FROM users WHERE id = ?').get(op.id);
-  const newOpName = newOpUser ? newOpUser.name : 'Non assegnato';
+  const newOp = db.prepare('SELECT name FROM users WHERE id = ?').get(operatorId);
 
   db.prepare('UPDATE tickets SET assigned_to = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
-    .run(op.id, ticket.id);
+    .run(operatorId, ticket.id);
 
   db.prepare('INSERT INTO status_history (ticket_id, changed_by, event_type, old_value, new_value) VALUES (?, ?, ?, ?, ?)')
-    .run(ticket.id, req.session.user.id, 'assign', oldOpName, newOpName);
+    .run(ticket.id, req.session.user.id, 'assign', oldOp ? oldOp.name : 'Non assegnato', newOp.name);
 
   if (ticket.status === 'aperto') {
     db.prepare('UPDATE tickets SET status = \'in_corso\', updated_at = CURRENT_TIMESTAMP WHERE id = ?')
@@ -265,7 +257,7 @@ router.post('/admin/tickets/:id/auto-assign', (req, res) => {
     db.prepare('INSERT INTO status_history (ticket_id, changed_by, event_type, old_value, new_value) VALUES (?, ?, ?, ?, ?)')
       .run(ticket.id, req.session.user.id, 'status', 'aperto', 'in_corso');
   }
-  req.setFlash('success', 'Ticket assegnato automaticamente.');
+  req.setFlash('success', `Ticket assegnato automaticamente a ${newOp.name}.`);
   res.redirect(`/admin/tickets/${ticket.id}`);
 });
 

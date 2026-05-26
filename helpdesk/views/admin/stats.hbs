@@ -32,19 +32,41 @@
 <div class="two-col-layout">
   <div class="col-main">
 
-    {{!-- Trend 7 giorni --}}
+    {{!-- Workload operatori --}}
     <div class="card" style="margin-bottom:1.5rem;">
-      <h2>Trend ultimi 7 giorni</h2>
-      <div class="chart-vertical" style="margin-top:1.25rem;">
-        {{#each trend}}
-        <div class="chart-col">
-          <div class="chart-bar" style="height: {{this.heightPerc}}%">
-            <span class="chart-value">{{this.count}}</span>
-          </div>
-          <span class="chart-label">{{this.date}}</span>
-        </div>
-        {{/each}}
+      <div class="card-header">
+        <h3 class="card-title">Workload operatori</h3>
+        <span style="font-size:12px;color:#64748b;">Ticket attivi vs risolti per operatore</span>
       </div>
+      {{#each workload}}
+      <div style="margin-bottom:18px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <strong style="font-size:14px;color:#1e293b;">{{this.name}}</strong>
+          <span style="font-size:12px;color:#64748b;">
+            {{this.attivi}} attivi · {{this.risolti}} risolti · {{this.chiusi}} chiusi
+          </span>
+        </div>
+        <div style="margin-bottom:4px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:11px;color:#64748b;width:52px;">Attivi</span>
+            <div class="bar-container" style="flex:1;">
+              <div class="bar" style="width:{{this.attiviPerc}}%;background:#f59e0b;">{{this.attivi}}</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:11px;color:#64748b;width:52px;">Risolti</span>
+            <div class="bar-container" style="flex:1;">
+              <div class="bar" style="width:{{this.risoltiPerc}}%;background:#22c55e;">{{this.risolti}}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {{/each}}
+      {{#unless workload}}
+      <p style="color:#94a3b8;font-size:13px;">Nessun operatore presente.</p>
+      {{/unless}}
     </div>
 
     {{!-- Performance operatori --}}
@@ -85,22 +107,41 @@
       {{/if}}
     </div>
 
-    {{!-- Ticket scaduti --}}
-    {{#if overdueCount}}
-    <div class="card" style="border-left:4px solid #ef4444;">
-      <h2>Ticket scaduti &gt;48h <span style="font-size:1rem; font-weight:400; color:#ef4444;">({{overdueCount}} totali)</span></h2>
-      <ul style="margin-top:0.75rem; list-style:none; padding:0; display:flex; flex-direction:column; gap:0.5rem;">
-        {{#each overdueList}}
-        <li style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
-          <a href="/admin/tickets/{{this.id}}" style="font-weight:500;">#{{this.id}} {{this.title}}</a>
-          <span class="badge badge-{{this.priority}}">{{capitalize this.priority}}</span>
-          <span class="badge badge-{{this.status}}">{{capitalize this.status}}</span>
-          <span style="font-size:0.8rem; color:#64748b;">{{this.user_name}} — {{formatDate this.created_at}}</span>
-        </li>
-        {{/each}}
-      </ul>
+    {{!-- Tasso di risoluzione per categoria --}}
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Tasso di risoluzione per categoria</h3>
+        <span style="font-size:12px;color:#64748b;">% ticket risolti o chiusi sul totale</span>
+      </div>
+      {{#each tassoCategoria}}
+      <div style="margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+          <span style="font-size:13px;font-weight:600;color:#1e293b;text-transform:capitalize;">{{this.category}}</span>
+          <span style="font-size:12px;color:#64748b;">
+            {{this.risolti}}/{{this.totale}} risolti
+            <strong style="margin-left:6px;color:{{this.colore}};">{{this.tassoPerc}}%</strong>
+          </span>
+        </div>
+        <div style="background:#e2e8f0;border-radius:4px;height:10px;overflow:hidden;">
+          <div style="height:100%;border-radius:4px;background:{{this.colore}};width:{{this.tassoPerc}}%;transition:width .4s ease;"></div>
+        </div>
+      </div>
+      {{/each}}
+      {{#unless tassoCategoria}}
+      <p style="color:#94a3b8;font-size:13px;">Nessun dato disponibile.</p>
+      {{/unless}}
+      <div style="display:flex;gap:16px;margin-top:14px;padding-top:12px;border-top:1px solid #f1f5f9;">
+        <span style="font-size:11px;color:#64748b;display:flex;align-items:center;gap:4px;">
+          <span style="width:10px;height:10px;border-radius:2px;background:#22c55e;display:inline-block;"></span>≥ 75% ottimo
+        </span>
+        <span style="font-size:11px;color:#64748b;display:flex;align-items:center;gap:4px;">
+          <span style="width:10px;height:10px;border-radius:2px;background:#f59e0b;display:inline-block;"></span>40–74% nella norma
+        </span>
+        <span style="font-size:11px;color:#64748b;display:flex;align-items:center;gap:4px;">
+          <span style="width:10px;height:10px;border-radius:2px;background:#ef4444;display:inline-block;"></span>&lt; 40% critico
+        </span>
+      </div>
     </div>
-    {{/if}}
 
   </div>
 
