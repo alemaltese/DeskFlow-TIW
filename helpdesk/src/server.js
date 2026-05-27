@@ -4,7 +4,7 @@ const { engine } = require('express-handlebars');
 const session = require('express-session');
 const path = require('path');
 
-require('./db/db');
+require('./db/connection');
 
 const flashMiddleware  = require('./middleware/flash');
 const authRouter       = require('./routes/auth');

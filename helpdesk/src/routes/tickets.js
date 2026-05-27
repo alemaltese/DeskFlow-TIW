@@ -1,27 +1,22 @@
 'use strict';
-const express = require('express');
-const bcrypt = require('bcrypt');
-const db = require('../db/db');
+const express    = require('express');
+const bcrypt     = require('bcrypt');
 const { requireUtente } = require('../middleware/auth');
-const { getOperatorWithFewestTickets } = require('../helpers/operators');
+const ticketRepo = require('../repositories/tickets.repo');
+const userRepo   = require('../repositories/users.repo');
 
 const router = express.Router();
 
 const CATEGORIES = ['tecnico', 'account', 'fatturazione', 'altro'];
 const PRIORITIES = ['bassa', 'media', 'alta', 'urgente'];
 
-// ── GET /tickets ───────────────────────────────────────────────────────────
+// ── GET /tickets ──────────────────────────────────────────────────────────────
 router.get('/tickets', requireUtente, (req, res) => {
-  const tickets = db.prepare(`
-    SELECT * FROM tickets
-    WHERE user_id = ?
-    ORDER BY created_at DESC
-  `).all(req.session.user.id);
-
+  const tickets = ticketRepo.findByUserId(req.session.user.id);
   res.render('utente/list', { title: 'I miei ticket', tickets });
 });
 
-// ── GET /tickets/new ───────────────────────────────────────────────────────
+// ── GET /tickets/new ──────────────────────────────────────────────────────────
 router.get('/tickets/new', requireUtente, (req, res) => {
   if (req.session.user.role !== 'utente') {
     return res.status(403).render('error', { title: 'Accesso negato', message: 'Solo gli utenti possono aprire ticket.' });
@@ -33,7 +28,7 @@ router.get('/tickets/new', requireUtente, (req, res) => {
   });
 });
 
-// ── POST /tickets ──────────────────────────────────────────────────────────
+// ── POST /tickets ─────────────────────────────────────────────────────────────
 router.post('/tickets', requireUtente, (req, res) => {
   if (req.session.user.role !== 'utente') {
     return res.status(403).render('error', { title: 'Accesso negato', message: 'Solo gli utenti possono aprire ticket.' });
@@ -60,57 +55,28 @@ router.post('/tickets', requireUtente, (req, res) => {
     });
   }
 
-  const operatorId = getOperatorWithFewestTickets();
-
-  const result = db.prepare(`
-    INSERT INTO tickets (user_id, title, description, category, priority, status, assigned_to)
-    VALUES (?, ?, ?, ?, ?, 'aperto', ?)
-  `).run(req.session.user.id, title.trim(), description.trim(), category, priority, operatorId);
-
-  db.prepare(`
-    INSERT INTO status_history (ticket_id, changed_by, event_type, old_value, new_value)
-    VALUES (?, ?, 'status', '', 'aperto')
-  `).run(result.lastInsertRowid, req.session.user.id);
+  const operatorId = userRepo.getOperatorWithFewestTickets();
+  ticketRepo.createTicket(req.session.user.id, title.trim(), description.trim(), category, priority, operatorId);
 
   req.setFlash('success', 'Ticket aperto con successo!');
   res.redirect('/tickets');
 });
 
-// ── GET /tickets/:id ───────────────────────────────────────────────────────
+// ── GET /tickets/:id ──────────────────────────────────────────────────────────
 router.get('/tickets/:id', requireUtente, (req, res) => {
   const ticketId = parseInt(req.params.id, 10);
   if (isNaN(ticketId)) return res.status(404).render('error', { title: 'Non trovato', message: 'Ticket non trovato.' });
 
-  const ticket = db.prepare(`
-    SELECT t.*, u.name AS user_name, op.name AS operator_name
-    FROM tickets t
-    JOIN users u ON t.user_id = u.id
-    LEFT JOIN users op ON t.assigned_to = op.id
-    WHERE t.id = ?
-  `).get(ticketId);
-
+  const ticket = ticketRepo.findDetailById(ticketId);
   if (!ticket) return res.status(404).render('error', { title: 'Non trovato', message: 'Ticket non trovato.' });
   if (ticket.user_id !== req.session.user.id) {
     return res.status(403).render('error', { title: 'Accesso negato', message: 'Non puoi visualizzare questo ticket.' });
   }
 
-  const comments = db.prepare(`
-    SELECT c.*, u.name AS author_name, u.role AS author_role
-    FROM comments c
-    JOIN users u ON c.user_id = u.id
-    WHERE c.ticket_id = ? AND c.is_internal = 0
-    ORDER BY c.created_at ASC
-  `).all(ticketId).map(c => ({ ...c, isOwn: c.user_id === req.session.user.id }));
-
-  const history = db.prepare(`
-    SELECT sh.*, u.name AS changed_by_name
-    FROM status_history sh
-    JOIN users u ON sh.changed_by = u.id
-    WHERE sh.ticket_id = ?
-    ORDER BY sh.changed_at ASC
-  `).all(ticketId);
-
-  const rating = db.prepare('SELECT * FROM ratings WHERE ticket_id = ?').get(ticketId);
+  const comments = ticketRepo.getPublicComments(ticketId)
+    .map(c => ({ ...c, isOwn: c.user_id === req.session.user.id }));
+  const history  = ticketRepo.getHistory(ticketId);
+  const rating   = ticketRepo.getRating(ticketId);
 
   if (rating) {
     rating.starsArr = Array.from({ length: 5 }, (_, i) => ({ filled: i < rating.score }));
@@ -118,20 +84,17 @@ router.get('/tickets/:id', requireUtente, (req, res) => {
 
   res.render('utente/detail', {
     title: ticket.title,
-    ticket,
-    comments,
-    history,
-    rating,
+    ticket, comments, history, rating,
     canClose:   ticket.status === 'risolto' && !rating,
     canReopen:  ticket.status === 'chiuso',
     canComment: ticket.status !== 'chiuso',
   });
 });
 
-// ── POST /tickets/:id/comments ─────────────────────────────────────────────
+// ── POST /tickets/:id/comments ────────────────────────────────────────────────
 router.post('/tickets/:id/comments', requireUtente, (req, res) => {
   const ticketId = parseInt(req.params.id, 10);
-  const ticket = db.prepare('SELECT * FROM tickets WHERE id = ?').get(ticketId);
+  const ticket   = ticketRepo.findById(ticketId);
 
   if (!ticket || ticket.user_id !== req.session.user.id) {
     return res.status(403).render('error', { title: 'Accesso negato', message: 'Operazione non consentita.' });
@@ -147,19 +110,15 @@ router.post('/tickets/:id/comments', requireUtente, (req, res) => {
     return res.redirect(`/tickets/${ticketId}`);
   }
 
-  db.prepare(`
-    INSERT INTO comments (ticket_id, user_id, content, is_internal)
-    VALUES (?, ?, ?, 0)
-  `).run(ticketId, req.session.user.id, content.trim());
-
+  ticketRepo.addComment(ticketId, req.session.user.id, content.trim(), 0);
   req.setFlash('success', 'Commento aggiunto.');
   res.redirect(`/tickets/${ticketId}`);
 });
 
-// ── POST /tickets/:id/chiudi ───────────────────────────────────────────────
+// ── POST /tickets/:id/chiudi ──────────────────────────────────────────────────
 router.post('/tickets/:id/chiudi', requireUtente, (req, res) => {
   const ticketId = parseInt(req.params.id, 10);
-  const ticket = db.prepare('SELECT * FROM tickets WHERE id = ?').get(ticketId);
+  const ticket   = ticketRepo.findById(ticketId);
 
   if (!ticket || ticket.user_id !== req.session.user.id) {
     return res.status(403).render('error', { title: 'Accesso negato', message: 'Operazione non consentita.' });
@@ -169,30 +128,19 @@ router.post('/tickets/:id/chiudi', requireUtente, (req, res) => {
     return res.redirect(`/tickets/${ticketId}`);
   }
 
-  const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
-
-  db.prepare(`UPDATE tickets SET status = 'chiuso', updated_at = ? WHERE id = ?`).run(now, ticketId);
-  db.prepare(`
-    INSERT INTO status_history (ticket_id, changed_by, event_type, old_value, new_value, changed_at)
-    VALUES (?, ?, 'status', 'risolto', 'chiuso', ?)
-  `).run(ticketId, req.session.user.id, now);
-
+  const now   = new Date().toISOString().replace('T', ' ').slice(0, 19);
   const score = parseInt(req.body.score, 10);
-  if (score >= 1 && score <= 5) {
-    const note = req.body.note ? req.body.note.trim() || null : null;
-    db.prepare(`
-      INSERT INTO ratings (ticket_id, user_id, score, note) VALUES (?, ?, ?, ?)
-    `).run(ticketId, req.session.user.id, score, note);
-  }
+  const note  = req.body.note ? req.body.note.trim() || null : null;
 
+  ticketRepo.closeTicket(ticketId, req.session.user.id, now, score, note);
   req.setFlash('success', 'Ticket chiuso. Grazie per la valutazione!');
   res.redirect(`/tickets/${ticketId}`);
 });
 
-// ── POST /tickets/:id/riapri ───────────────────────────────────────────────
+// ── POST /tickets/:id/riapri ──────────────────────────────────────────────────
 router.post('/tickets/:id/riapri', requireUtente, (req, res) => {
   const ticketId = parseInt(req.params.id, 10);
-  const ticket = db.prepare('SELECT * FROM tickets WHERE id = ?').get(ticketId);
+  const ticket   = ticketRepo.findById(ticketId);
 
   if (!ticket || ticket.user_id !== req.session.user.id) {
     return res.status(403).render('error', { title: 'Accesso negato', message: 'Operazione non consentita.' });
@@ -203,18 +151,12 @@ router.post('/tickets/:id/riapri', requireUtente, (req, res) => {
   }
 
   const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
-
-  db.prepare(`UPDATE tickets SET status = 'aperto', updated_at = ? WHERE id = ?`).run(now, ticketId);
-  db.prepare(`
-    INSERT INTO status_history (ticket_id, changed_by, event_type, old_value, new_value, changed_at)
-    VALUES (?, ?, 'status', 'chiuso', 'aperto', ?)
-  `).run(ticketId, req.session.user.id, now);
-
+  ticketRepo.reopenTicket(ticketId, req.session.user.id, now);
   req.setFlash('success', 'Ticket riaperto con successo.');
   res.redirect(`/tickets/${ticketId}`);
 });
 
-// ── GET /profilo ───────────────────────────────────────────────────────────
+// ── GET /profilo ──────────────────────────────────────────────────────────────
 router.get('/profilo', requireUtente, (req, res) => {
   if (req.session.user.role !== 'utente') {
     return res.redirect(`/${req.session.user.role}/profilo`);
@@ -222,7 +164,7 @@ router.get('/profilo', requireUtente, (req, res) => {
   res.render('utente/profilo', { title: 'Il mio profilo', user: req.session.user });
 });
 
-// ── POST /profilo ──────────────────────────────────────────────────────────
+// ── POST /profilo ─────────────────────────────────────────────────────────────
 router.post('/profilo', requireUtente, async (req, res) => {
   if (req.session.user.role !== 'utente') {
     return res.status(403).render('error', { title: 'Accesso negato', message: 'Operazione non consentita.' });
@@ -238,7 +180,7 @@ router.post('/profilo', requireUtente, async (req, res) => {
     return res.redirect('/profilo');
   }
 
-  const existing = db.prepare('SELECT id FROM users WHERE email = ? AND id != ?').get(email.trim(), req.session.user.id);
+  const existing = userRepo.findIdByEmailExcluding(email.trim(), req.session.user.id);
   if (existing) {
     req.setFlash('error', 'Email già in uso da un altro account.');
     return res.redirect('/profilo');
@@ -257,20 +199,16 @@ router.post('/profilo', requireUtente, async (req, res) => {
       req.setFlash('error', 'La nuova password deve essere di almeno 6 caratteri.');
       return res.redirect('/profilo');
     }
-
-    const dbUser = db.prepare('SELECT password_hash FROM users WHERE id = ?').get(req.session.user.id);
-    const match = await bcrypt.compare(old_password, dbUser.password_hash);
+    const dbUser = userRepo.findPasswordHashById(req.session.user.id);
+    const match  = await bcrypt.compare(old_password, dbUser.password_hash);
     if (!match) {
       req.setFlash('error', 'Password attuale non corretta.');
       return res.redirect('/profilo');
     }
-
     const newHash = await bcrypt.hash(new_password, 10);
-    db.prepare('UPDATE users SET name = ?, email = ?, password_hash = ? WHERE id = ?')
-      .run(name.trim(), email.trim(), newHash, req.session.user.id);
+    userRepo.updateUserNameEmailPassword(req.session.user.id, name.trim(), email.trim(), newHash);
   } else {
-    db.prepare('UPDATE users SET name = ?, email = ? WHERE id = ?')
-      .run(name.trim(), email.trim(), req.session.user.id);
+    userRepo.updateUserNameEmail(req.session.user.id, name.trim(), email.trim());
   }
 
   req.session.user = { ...req.session.user, name: name.trim(), email: email.trim() };
