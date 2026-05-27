@@ -13,7 +13,7 @@ function homeFor(role) {
 
 // ── GET /login ────────────────────────────────────────────────────────────────
 router.get('/login', (req, res) => {
-  if (req.session.user) return res.redirect(homeFor(req.session.user.role));
+  if (res.locals.currentUser) return res.redirect(homeFor(res.locals.currentUser.role));
   res.render('auth/login', { title: 'Accedi' });
 });
 
@@ -35,7 +35,7 @@ router.post('/login', async (req, res) => {
     return res.render('auth/login', { title: 'Accedi', error: 'Credenziali non valide.', old: { email } });
   }
 
-  req.session.user = { id: user.id, name: user.name, email: user.email, role: user.role };
+  req.session.userId = user.id;
 
   const returnTo = req.session.returnTo || null;
   delete req.session.returnTo;
@@ -47,7 +47,7 @@ router.post('/login', async (req, res) => {
 
 // ── GET /register ─────────────────────────────────────────────────────────────
 router.get('/register', (req, res) => {
-  if (req.session.user) return res.redirect(homeFor(req.session.user.role));
+  if (res.locals.currentUser) return res.redirect(homeFor(res.locals.currentUser.role));
   res.render('auth/register', { title: 'Registrati' });
 });
 
@@ -77,12 +77,7 @@ router.post('/register', async (req, res) => {
   const hash   = await bcrypt.hash(password, 10);
   const result = userRepo.createUser(name.trim(), email.trim().toLowerCase(), hash, 'utente');
 
-  req.session.user = {
-    id:    result.lastInsertRowid,
-    name:  name.trim(),
-    email: email.trim().toLowerCase(),
-    role:  'utente',
-  };
+  req.session.userId = result.lastInsertRowid;
 
   req.setFlash('success', `Benvenuto, ${name.trim()}!`);
   res.redirect('/tickets');

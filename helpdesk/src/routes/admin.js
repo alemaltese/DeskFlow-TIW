@@ -43,9 +43,9 @@ router.get('/admin/tickets', (req, res) => {
 });
 
 // ── Ticket detail ─────────────────────────────────────────────────────────────
-router.get('/admin/tickets/:id', (req, res) => {
+router.get('/admin/tickets/:id', (req, res, next) => {
   const ticket = ticketRepo.findAdminDetailById(req.params.id);
-  if (!ticket) return res.status(404).render('error', { title: 'Ticket non trovato', message: 'Il ticket non esiste.' });
+  if (!ticket) return next();
 
   const comments  = ticketRepo.getAllComments(req.params.id);
   const history   = ticketRepo.getHistory(req.params.id);
@@ -64,22 +64,22 @@ router.get('/admin/tickets/:id', (req, res) => {
 });
 
 // ── POST actions on a ticket ──────────────────────────────────────────────────
-router.post('/admin/tickets/:id/status', (req, res) => {
+router.post('/admin/tickets/:id/status', (req, res, next) => {
   const { status } = req.body;
   const ticket = ticketRepo.findById(req.params.id);
-  if (!ticket) return res.status(404).render('error', { title: 'Ticket non trovato', message: '' });
+  if (!ticket) return next();
 
   if (STATUSES.includes(status) && status !== ticket.status) {
-    ticketRepo.updateAdminStatus(ticket.id, req.session.user.id, ticket.status, status);
+    ticketRepo.updateAdminStatus(ticket.id, res.locals.currentUser.id, ticket.status, status);
   }
   req.setFlash('success', 'Stato aggiornato.');
   res.redirect(`/admin/tickets/${ticket.id}`);
 });
 
-router.post('/admin/tickets/:id/assegna', (req, res) => {
+router.post('/admin/tickets/:id/assegna', (req, res, next) => {
   const { operator_id } = req.body;
   const ticket = ticketRepo.findById(req.params.id);
-  if (!ticket) return res.status(404).render('error', { title: 'Ticket non trovato', message: '' });
+  if (!ticket) return next();
 
   const oldOp     = ticket.assigned_to ? userRepo.findNameById(ticket.assigned_to) : null;
   const oldOpName = oldOp ? oldOp.name : 'Non assegnato';
@@ -87,24 +87,24 @@ router.post('/admin/tickets/:id/assegna', (req, res) => {
   const newOp     = newOpId ? userRepo.findNameById(newOpId) : null;
   const newOpName = newOp ? newOp.name : 'Non assegnato';
 
-  ticketRepo.assignTicket(ticket.id, req.session.user.id, newOpId, oldOpName, newOpName, ticket.status);
+  ticketRepo.assignTicket(ticket.id, res.locals.currentUser.id, newOpId, oldOpName, newOpName, ticket.status);
   req.setFlash('success', 'Operatore aggiornato.');
   res.redirect(`/admin/tickets/${ticket.id}`);
 });
 
-router.post('/admin/tickets/:id/priorita', (req, res) => {
+router.post('/admin/tickets/:id/priorita', (req, res, next) => {
   const { priority } = req.body;
   if (!PRIORITIES.includes(priority)) return res.redirect(`/admin/tickets/${req.params.id}`);
 
   const ticket = ticketRepo.findById(req.params.id);
-  if (!ticket) return res.status(404).render('error', { title: 'Ticket non trovato', message: '' });
+  if (!ticket) return next();
 
   if (['risolto', 'chiuso'].includes(ticket.status)) {
     req.setFlash('error', 'Non è possibile modificare la priorità di un ticket già risolto o chiuso.');
     return res.redirect(`/admin/tickets/${req.params.id}`);
   }
 
-  ticketRepo.updateAdminPriority(ticket.id, req.session.user.id, ticket.priority, priority);
+  ticketRepo.updateAdminPriority(ticket.id, res.locals.currentUser.id, ticket.priority, priority);
   req.setFlash('success', 'Priorità aggiornata.');
   res.redirect(`/admin/tickets/${req.params.id}`);
 });
@@ -115,14 +115,14 @@ router.post('/admin/tickets/:id/commenti', (req, res) => {
     req.setFlash('error', 'Il commento non può essere vuoto.');
     return res.redirect(`/admin/tickets/${req.params.id}`);
   }
-  ticketRepo.addComment(req.params.id, req.session.user.id, body.trim(), is_internal === '1' ? 1 : 0);
+  ticketRepo.addComment(req.params.id, res.locals.currentUser.id, body.trim(), is_internal === '1' ? 1 : 0);
   req.setFlash('success', 'Commento aggiunto.');
   res.redirect(`/admin/tickets/${req.params.id}`);
 });
 
-router.post('/admin/tickets/:id/auto-assign', (req, res) => {
+router.post('/admin/tickets/:id/auto-assign', (req, res, next) => {
   const ticket = ticketRepo.findById(req.params.id);
-  if (!ticket) return res.status(404).render('error', { title: 'Ticket non trovato', message: '' });
+  if (!ticket) return next();
 
   const operatorId = userRepo.getOperatorWithFewestTickets();
   if (!operatorId) {
@@ -134,7 +134,7 @@ router.post('/admin/tickets/:id/auto-assign', (req, res) => {
   const newOp     = userRepo.findNameById(operatorId);
   const oldOpName = oldOp ? oldOp.name : 'Non assegnato';
 
-  ticketRepo.assignTicket(ticket.id, req.session.user.id, operatorId, oldOpName, newOp.name, ticket.status);
+  ticketRepo.assignTicket(ticket.id, res.locals.currentUser.id, operatorId, oldOpName, newOp.name, ticket.status);
   req.setFlash('success', `Ticket assegnato automaticamente a ${newOp.name}.`);
   res.redirect(`/admin/tickets/${ticket.id}`);
 });
@@ -177,15 +177,15 @@ router.post('/admin/utenti', async (req, res) => {
   res.redirect('/admin/utenti');
 });
 
-router.get('/admin/utenti/:id/modifica', (req, res) => {
+router.get('/admin/utenti/:id/modifica', (req, res, next) => {
   const user = userRepo.findByIdNotAdmin(req.params.id);
-  if (!user) return res.status(404).render('error', { title: 'Utente non trovato', message: '' });
+  if (!user) return next();
   res.render('admin/utente-form', { title: 'Modifica utente', user, isNew: false });
 });
 
-router.post('/admin/utenti/:id', async (req, res) => {
+router.post('/admin/utenti/:id', async (req, res, next) => {
   const existing = userRepo.findByIdNotAdmin(req.params.id);
-  if (!existing) return res.status(404).render('error', { title: 'Utente non trovato', message: '' });
+  if (!existing) return next();
 
   const { name, email, role, new_password } = req.body;
   const errors = [];
@@ -221,7 +221,7 @@ router.post('/admin/utenti/:id', async (req, res) => {
 
 // ── Profilo admin ─────────────────────────────────────────────────────────────
 router.get('/admin/profilo', (req, res) => {
-  const user = userRepo.findById(req.session.user.id);
+  const user = userRepo.findById(res.locals.currentUser.id);
   res.render('admin/profilo', { title: 'Il mio profilo', utente: user });
 });
 

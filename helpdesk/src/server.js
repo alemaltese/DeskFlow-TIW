@@ -6,6 +6,7 @@ const path = require('path');
 
 require('./db/connection');
 
+const usersRepo        = require('./repositories/users.repo');
 const flashMiddleware  = require('./middleware/flash');
 const authRouter       = require('./routes/auth');
 const ticketsRouter    = require('./routes/tickets');
@@ -53,9 +54,15 @@ app.use(express.json());
 
 // ── Session ────────────────────────────────────────────────────────────────
 app.use(session({
+  name: 'connect.sid',
   secret: 'helpdesk-secret',
   resave: false,
   saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    sameSite: 'lax',
+    maxAge: 1000 * 60 * 60,
+  },
 }));
 
 // ── Flash ──────────────────────────────────────────────────────────────────
@@ -63,17 +70,17 @@ app.use(flashMiddleware);
 
 // ── Current user in locals (navbar) ───────────────────────────────────────
 app.use((req, res, next) => {
-  const u = req.session.user || null;
-  res.locals.currentUser  = u;
-  res.locals.isOperatore  = u && (u.role === 'operatore' || u.role === 'admin');
-  res.locals.isAdmin      = u && u.role === 'admin';
-  res.locals.currentYear  = new Date().getFullYear();
+  const u = req.session.userId ? usersRepo.findById(req.session.userId) : null;
+  res.locals.currentUser = u;
+  res.locals.isOperatore = u && (u.role === 'operatore' || u.role === 'admin');
+  res.locals.isAdmin     = u && u.role === 'admin';
+  res.locals.currentYear = new Date().getFullYear();
   next();
 });
 
 // ── Routes ─────────────────────────────────────────────────────────────────
 app.get('/', (req, res) => {
-  const u = req.session.user;
+  const u = res.locals.currentUser;
   if (!u) return res.render('home', { title: 'Helpdesk' });
   if (u.role === 'admin')     return res.redirect('/admin/dashboard');
   if (u.role === 'operatore') return res.redirect('/operatore/dashboard');
@@ -88,17 +95,27 @@ app.use('/', statsRouter);
 
 // ── 404 ────────────────────────────────────────────────────────────────────
 app.use((req, res) => {
-  res.status(404).render('error', { title: 'Pagina non trovata', message: 'La pagina richiesta non esiste.' });
+  if (req.accepts('html')) {
+    return res.status(404).render('errors/404', {
+      title: 'Pagina non trovata',
+      path: req.originalUrl,
+    });
+  }
+  res.status(404).json({ error: 'not_found', path: req.originalUrl });
 });
 
 // ── 500 ────────────────────────────────────────────────────────────────────
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, _next) => {
   console.error('[500]', err);
-  res.status(500).render('error', {
-    title: 'Errore interno',
-    message: 'Si è verificato un errore interno del server.',
-  });
+  const showDetails = process.env.NODE_ENV !== 'production';
+  if (req.accepts('html')) {
+    return res.status(500).render('errors/500', {
+      title: 'Errore interno',
+      details: showDetails ? String(err && err.stack ? err.stack : err) : null,
+    });
+  }
+  res.status(500).json({ error: 'internal' });
 });
 
 app.listen(3000, () => {

@@ -1,7 +1,7 @@
 'use strict';
 
 function requireUtente(req, res, next) {
-  if (!req.session.user) {
+  if (!res.locals.currentUser) {
     req.session.returnTo = req.originalUrl;
     return res.redirect('/login');
   }
@@ -9,17 +9,19 @@ function requireUtente(req, res, next) {
 }
 
 function requireOperatore(req, res, next) {
-  if (!req.session.user) return res.redirect('/login');
-  if (req.session.user.role !== 'operatore' && req.session.user.role !== 'admin') {
-    return res.status(403).render('error', { title: 'Accesso negato', message: 'Non hai i permessi per questa pagina.' });
+  if (!res.locals.currentUser) return res.redirect('/login');
+  if (res.locals.currentUser.role !== 'operatore' && res.locals.currentUser.role !== 'admin') {
+    req.setFlash('error', 'Non hai i permessi per questa pagina.');
+    return res.redirect('/');
   }
   next();
 }
 
 function requireAdmin(req, res, next) {
-  if (!req.session.user) return res.redirect('/login');
-  if (req.session.user.role !== 'admin') {
-    return res.status(403).render('error', { title: 'Accesso negato', message: 'Non hai i permessi per questa pagina.' });
+  if (!res.locals.currentUser) return res.redirect('/login');
+  if (res.locals.currentUser.role !== 'admin') {
+    req.setFlash('error', 'Non hai i permessi per questa pagina.');
+    return res.redirect('/');
   }
   next();
 }

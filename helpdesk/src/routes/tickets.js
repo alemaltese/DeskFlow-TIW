@@ -12,14 +12,15 @@ const PRIORITIES = ['bassa', 'media', 'alta', 'urgente'];
 
 // ── GET /tickets ──────────────────────────────────────────────────────────────
 router.get('/tickets', requireUtente, (req, res) => {
-  const tickets = ticketRepo.findByUserId(req.session.user.id);
+  const tickets = ticketRepo.findByUserId(res.locals.currentUser.id);
   res.render('utente/list', { title: 'I miei ticket', tickets });
 });
 
 // ── GET /tickets/new ──────────────────────────────────────────────────────────
 router.get('/tickets/new', requireUtente, (req, res) => {
-  if (req.session.user.role !== 'utente') {
-    return res.status(403).render('error', { title: 'Accesso negato', message: 'Solo gli utenti possono aprire ticket.' });
+  if (res.locals.currentUser.role !== 'utente') {
+    req.setFlash('error', 'Solo gli utenti possono aprire ticket.');
+    return res.redirect('/tickets');
   }
   res.render('utente/new', {
     title: 'Apri nuovo ticket',
@@ -30,8 +31,9 @@ router.get('/tickets/new', requireUtente, (req, res) => {
 
 // ── POST /tickets ─────────────────────────────────────────────────────────────
 router.post('/tickets', requireUtente, (req, res) => {
-  if (req.session.user.role !== 'utente') {
-    return res.status(403).render('error', { title: 'Accesso negato', message: 'Solo gli utenti possono aprire ticket.' });
+  if (res.locals.currentUser.role !== 'utente') {
+    req.setFlash('error', 'Solo gli utenti possono aprire ticket.');
+    return res.redirect('/tickets');
   }
   const { title, description, category, priority } = req.body;
   const errors = [];
@@ -56,25 +58,26 @@ router.post('/tickets', requireUtente, (req, res) => {
   }
 
   const operatorId = userRepo.getOperatorWithFewestTickets();
-  ticketRepo.createTicket(req.session.user.id, title.trim(), description.trim(), category, priority, operatorId);
+  ticketRepo.createTicket(res.locals.currentUser.id, title.trim(), description.trim(), category, priority, operatorId);
 
   req.setFlash('success', 'Ticket aperto con successo!');
   res.redirect('/tickets');
 });
 
 // ── GET /tickets/:id ──────────────────────────────────────────────────────────
-router.get('/tickets/:id', requireUtente, (req, res) => {
+router.get('/tickets/:id', requireUtente, (req, res, next) => {
   const ticketId = parseInt(req.params.id, 10);
-  if (isNaN(ticketId)) return res.status(404).render('error', { title: 'Non trovato', message: 'Ticket non trovato.' });
+  if (isNaN(ticketId)) return next();
 
   const ticket = ticketRepo.findDetailById(ticketId);
-  if (!ticket) return res.status(404).render('error', { title: 'Non trovato', message: 'Ticket non trovato.' });
-  if (ticket.user_id !== req.session.user.id) {
-    return res.status(403).render('error', { title: 'Accesso negato', message: 'Non puoi visualizzare questo ticket.' });
+  if (!ticket) return next();
+  if (ticket.user_id !== res.locals.currentUser.id) {
+    req.setFlash('error', 'Non puoi visualizzare questo ticket.');
+    return res.redirect('/tickets');
   }
 
   const comments = ticketRepo.getPublicComments(ticketId)
-    .map(c => ({ ...c, isOwn: c.user_id === req.session.user.id }));
+    .map(c => ({ ...c, isOwn: c.user_id === res.locals.currentUser.id }));
   const history  = ticketRepo.getHistory(ticketId);
   const rating   = ticketRepo.getRating(ticketId);
 
@@ -96,8 +99,9 @@ router.post('/tickets/:id/comments', requireUtente, (req, res) => {
   const ticketId = parseInt(req.params.id, 10);
   const ticket   = ticketRepo.findById(ticketId);
 
-  if (!ticket || ticket.user_id !== req.session.user.id) {
-    return res.status(403).render('error', { title: 'Accesso negato', message: 'Operazione non consentita.' });
+  if (!ticket || ticket.user_id !== res.locals.currentUser.id) {
+    req.setFlash('error', 'Operazione non consentita.');
+    return res.redirect('/tickets');
   }
   if (ticket.status === 'chiuso') {
     req.setFlash('error', 'Non puoi commentare un ticket chiuso.');
@@ -110,7 +114,7 @@ router.post('/tickets/:id/comments', requireUtente, (req, res) => {
     return res.redirect(`/tickets/${ticketId}`);
   }
 
-  ticketRepo.addComment(ticketId, req.session.user.id, content.trim(), 0);
+  ticketRepo.addComment(ticketId, res.locals.currentUser.id, content.trim(), 0);
   req.setFlash('success', 'Commento aggiunto.');
   res.redirect(`/tickets/${ticketId}`);
 });
@@ -120,8 +124,9 @@ router.post('/tickets/:id/chiudi', requireUtente, (req, res) => {
   const ticketId = parseInt(req.params.id, 10);
   const ticket   = ticketRepo.findById(ticketId);
 
-  if (!ticket || ticket.user_id !== req.session.user.id) {
-    return res.status(403).render('error', { title: 'Accesso negato', message: 'Operazione non consentita.' });
+  if (!ticket || ticket.user_id !== res.locals.currentUser.id) {
+    req.setFlash('error', 'Operazione non consentita.');
+    return res.redirect('/tickets');
   }
   if (ticket.status !== 'risolto') {
     req.setFlash('error', 'Puoi chiudere solo ticket in stato risolto.');
@@ -132,7 +137,7 @@ router.post('/tickets/:id/chiudi', requireUtente, (req, res) => {
   const score = parseInt(req.body.score, 10);
   const note  = req.body.note ? req.body.note.trim() || null : null;
 
-  ticketRepo.closeTicket(ticketId, req.session.user.id, now, score, note);
+  ticketRepo.closeTicket(ticketId, res.locals.currentUser.id, now, score, note);
   req.setFlash('success', 'Ticket chiuso. Grazie per la valutazione!');
   res.redirect(`/tickets/${ticketId}`);
 });
@@ -142,8 +147,9 @@ router.post('/tickets/:id/riapri', requireUtente, (req, res) => {
   const ticketId = parseInt(req.params.id, 10);
   const ticket   = ticketRepo.findById(ticketId);
 
-  if (!ticket || ticket.user_id !== req.session.user.id) {
-    return res.status(403).render('error', { title: 'Accesso negato', message: 'Operazione non consentita.' });
+  if (!ticket || ticket.user_id !== res.locals.currentUser.id) {
+    req.setFlash('error', 'Operazione non consentita.');
+    return res.redirect('/tickets');
   }
   if (ticket.status !== 'chiuso') {
     req.setFlash('error', 'Puoi riaprire solo ticket chiusi.');
@@ -151,23 +157,24 @@ router.post('/tickets/:id/riapri', requireUtente, (req, res) => {
   }
 
   const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
-  ticketRepo.reopenTicket(ticketId, req.session.user.id, now);
+  ticketRepo.reopenTicket(ticketId, res.locals.currentUser.id, now);
   req.setFlash('success', 'Ticket riaperto con successo.');
   res.redirect(`/tickets/${ticketId}`);
 });
 
 // ── GET /profilo ──────────────────────────────────────────────────────────────
 router.get('/profilo', requireUtente, (req, res) => {
-  if (req.session.user.role !== 'utente') {
-    return res.redirect(`/${req.session.user.role}/profilo`);
+  if (res.locals.currentUser.role !== 'utente') {
+    return res.redirect(`/${res.locals.currentUser.role}/profilo`);
   }
-  res.render('utente/profilo', { title: 'Il mio profilo', user: req.session.user });
+  res.render('utente/profilo', { title: 'Il mio profilo', user: res.locals.currentUser });
 });
 
 // ── POST /profilo ─────────────────────────────────────────────────────────────
 router.post('/profilo', requireUtente, async (req, res) => {
-  if (req.session.user.role !== 'utente') {
-    return res.status(403).render('error', { title: 'Accesso negato', message: 'Operazione non consentita.' });
+  if (res.locals.currentUser.role !== 'utente') {
+    req.setFlash('error', 'Operazione non consentita.');
+    return res.redirect('/tickets');
   }
   const { name, email, old_password, new_password, confirm_password } = req.body;
 
@@ -180,7 +187,7 @@ router.post('/profilo', requireUtente, async (req, res) => {
     return res.redirect('/profilo');
   }
 
-  const existing = userRepo.findIdByEmailExcluding(email.trim(), req.session.user.id);
+  const existing = userRepo.findIdByEmailExcluding(email.trim(), res.locals.currentUser.id);
   if (existing) {
     req.setFlash('error', 'Email già in uso da un altro account.');
     return res.redirect('/profilo');
@@ -199,19 +206,18 @@ router.post('/profilo', requireUtente, async (req, res) => {
       req.setFlash('error', 'La nuova password deve essere di almeno 6 caratteri.');
       return res.redirect('/profilo');
     }
-    const dbUser = userRepo.findPasswordHashById(req.session.user.id);
+    const dbUser = userRepo.findPasswordHashById(res.locals.currentUser.id);
     const match  = await bcrypt.compare(old_password, dbUser.password_hash);
     if (!match) {
       req.setFlash('error', 'Password attuale non corretta.');
       return res.redirect('/profilo');
     }
     const newHash = await bcrypt.hash(new_password, 10);
-    userRepo.updateUserNameEmailPassword(req.session.user.id, name.trim(), email.trim(), newHash);
+    userRepo.updateUserNameEmailPassword(res.locals.currentUser.id, name.trim(), email.trim(), newHash);
   } else {
-    userRepo.updateUserNameEmail(req.session.user.id, name.trim(), email.trim());
+    userRepo.updateUserNameEmail(res.locals.currentUser.id, name.trim(), email.trim());
   }
 
-  req.session.user = { ...req.session.user, name: name.trim(), email: email.trim() };
   req.setFlash('success', 'Profilo aggiornato con successo.');
   res.redirect('/profilo');
 });
