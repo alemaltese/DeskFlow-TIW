@@ -40,6 +40,11 @@ const insertUserStmt              = db.prepare(`INSERT INTO users (name, email, 
 const updateNameEmailStmt         = db.prepare(`UPDATE users SET name = ?, email = ? WHERE id = ?`);
 const updateNameEmailPasswordStmt = db.prepare(`UPDATE users SET name = ?, email = ?, password_hash = ? WHERE id = ?`);
 const updateUserFullStmt          = db.prepare(`UPDATE users SET name = ?, email = ?, password_hash = ?, role = ? WHERE id = ?`);
+const deleteUserStmt              = db.prepare(`DELETE FROM users WHERE id = ? AND role != 'admin'`);
+const countUserTicketsStmt        = db.prepare(`SELECT COUNT(*) AS cnt FROM tickets WHERE user_id = ?`);
+const countUserCommentsStmt       = db.prepare(`SELECT COUNT(*) AS cnt FROM comments WHERE user_id = ?`);
+const countUserHistoryStmt        = db.prepare(`SELECT COUNT(*) AS cnt FROM status_history WHERE changed_by = ?`);
+const nullifyAssignedToStmt       = db.prepare(`UPDATE tickets SET assigned_to = NULL WHERE assigned_to = ?`);
 
 function findByEmail(email)                        { return findByEmailStmt.get(email); }
 function findIdByEmail(email)                      { return findIdByEmailStmt.get(email); }
@@ -69,6 +74,11 @@ function updateUserNameEmailPassword(id, name, email, passwordHash) {
 function updateUserFull(id, name, email, passwordHash, role) {
   return updateUserFullStmt.run(name, email, passwordHash, role, id);
 }
+function deleteUser(id)          { return deleteUserStmt.run(id); }
+function countUserTickets(id)    { return countUserTicketsStmt.get(id).cnt; }
+function countUserComments(id)   { return countUserCommentsStmt.get(id).cnt; }
+function countUserHistory(id)    { return countUserHistoryStmt.get(id).cnt; }
+function nullifyAssignedTo(id)   { return nullifyAssignedToStmt.run(id); }
 
 module.exports = {
   findByEmail,
@@ -86,4 +96,9 @@ module.exports = {
   updateUserNameEmail,
   updateUserNameEmailPassword,
   updateUserFull,
+  deleteUser,
+  countUserTickets,
+  countUserComments,
+  countUserHistory,
+  nullifyAssignedTo,
 };

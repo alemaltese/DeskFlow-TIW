@@ -25,8 +25,11 @@
         <td><span class="badge badge-in_corso">{{capitalize this.role}}</span></td>
         <td>{{this.ticket_count}}</td>
         <td>{{formatDate this.created_at}}</td>
-        <td>
+        <td style="display:flex; gap:0.4rem; flex-wrap:wrap;">
           <a href="/admin/utenti/{{this.id}}/modifica" class="btn btn-sm btn-secondary">Modifica</a>
+          <form method="POST" action="/admin/utenti/{{this.id}}/elimina" onsubmit="return confirm('Eliminare l\'utente {{this.name}}?')">
+            <button type="submit" class="btn btn-sm btn-danger">Elimina</button>
+          </form>
         </td>
       </tr>
       {{else}}

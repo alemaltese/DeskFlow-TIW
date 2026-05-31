@@ -240,6 +240,30 @@ router.post('/admin/utenti/:id', async (req, res, next) => {
   res.redirect('/admin/utenti');
 });
 
+router.post('/admin/utenti/:id/elimina', (req, res, next) => {
+  const user = userRepo.findByIdNotAdmin(req.params.id);
+  if (!user) return next();
+
+  if (userRepo.countUserTickets(user.id) > 0) {
+    req.setFlash('error', 'Impossibile eliminare: l\'utente ha ticket associati.');
+    return res.redirect('/admin/utenti');
+  }
+  if (userRepo.countUserComments(user.id) > 0) {
+    req.setFlash('error', 'Impossibile eliminare: l\'utente ha commenti nel sistema.');
+    return res.redirect('/admin/utenti');
+  }
+  if (userRepo.countUserHistory(user.id) > 0) {
+    req.setFlash('error', 'Impossibile eliminare: l\'utente ha modifiche storiche associate.');
+    return res.redirect('/admin/utenti');
+  }
+
+  userRepo.nullifyAssignedTo(user.id);
+  userRepo.deleteUser(user.id);
+
+  req.setFlash('success', `Utente "${user.name}" eliminato.`);
+  res.redirect('/admin/utenti');
+});
+
 // ── Profilo admin ─────────────────────────────────────────────────────────────
 router.get('/admin/profilo', (req, res) => {
   const user = userRepo.findById(res.locals.currentUser.id);
