@@ -4,6 +4,7 @@ const bcrypt     = require('bcrypt');
 const { requireAdmin } = require('../middleware/auth');
 const ticketRepo = require('../repositories/tickets.repo');
 const userRepo   = require('../repositories/users.repo');
+const emailService = require('../services/email.service');
 
 const router = express.Router();
 router.use(requireAdmin);
@@ -70,7 +71,10 @@ router.post('/admin/tickets/:id/status', (req, res, next) => {
   if (!ticket) return next();
 
   if (STATUSES.includes(status) && status !== ticket.status) {
-    ticketRepo.updateAdminStatus(ticket.id, res.locals.currentUser.id, ticket.status, status);
+    const oldStatus = ticket.status;
+    ticketRepo.updateAdminStatus(ticket.id, res.locals.currentUser.id, oldStatus, status);
+    const owner = userRepo.findById(ticket.user_id);
+    if (owner) emailService.sendStatusChangedEmail(owner.email, ticket.id, oldStatus, status).catch(() => {});
   }
   req.setFlash('success', 'Stato aggiornato.');
   res.redirect(`/admin/tickets/${ticket.id}`);
@@ -88,6 +92,14 @@ router.post('/admin/tickets/:id/assegna', (req, res, next) => {
   const newOpName = newOp ? newOp.name : 'Non assegnato';
 
   ticketRepo.assignTicket(ticket.id, res.locals.currentUser.id, newOpId, oldOpName, newOpName, ticket.status);
+
+  if (newOpId) {
+    const opUser    = userRepo.findById(newOpId);
+    const tickOwner = userRepo.findById(ticket.user_id);
+    if (opUser)    emailService.sendTicketAssignedEmail(opUser.email,    ticket.id, ticket.title, false).catch(() => {});
+    if (tickOwner) emailService.sendTicketAssignedEmail(tickOwner.email, ticket.id, ticket.title, true).catch(() => {});
+  }
+
   req.setFlash('success', 'Operatore aggiornato.');
   res.redirect(`/admin/tickets/${ticket.id}`);
 });
@@ -135,6 +147,12 @@ router.post('/admin/tickets/:id/auto-assign', (req, res, next) => {
   const oldOpName = oldOp ? oldOp.name : 'Non assegnato';
 
   ticketRepo.assignTicket(ticket.id, res.locals.currentUser.id, operatorId, oldOpName, newOp.name, ticket.status);
+
+  const opUser    = userRepo.findById(operatorId);
+  const tickOwner = userRepo.findById(ticket.user_id);
+  if (opUser)    emailService.sendTicketAssignedEmail(opUser.email,    ticket.id, ticket.title, false).catch(() => {});
+  if (tickOwner) emailService.sendTicketAssignedEmail(tickOwner.email, ticket.id, ticket.title, true).catch(() => {});
+
   req.setFlash('success', `Ticket assegnato automaticamente a ${newOp.name}.`);
   res.redirect(`/admin/tickets/${ticket.id}`);
 });
@@ -173,6 +191,9 @@ router.post('/admin/utenti', async (req, res) => {
 
   const hash = await bcrypt.hash(password, 12);
   userRepo.createUser(name.trim(), email.trim().toLowerCase(), hash, role);
+
+  emailService.sendWelcomeEmail(email.trim().toLowerCase(), name.trim(), password).catch(() => {});
+
   req.setFlash('success', 'Utente creato.');
   res.redirect('/admin/utenti');
 });

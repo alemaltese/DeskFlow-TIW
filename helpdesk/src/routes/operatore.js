@@ -2,8 +2,9 @@
 const express    = require('express');
 const bcrypt     = require('bcrypt');
 const { requireOperatore } = require('../middleware/auth');
-const ticketRepo = require('../repositories/tickets.repo');
-const userRepo   = require('../repositories/users.repo');
+const ticketRepo   = require('../repositories/tickets.repo');
+const userRepo     = require('../repositories/users.repo');
+const emailService = require('../services/email.service');
 
 const router = express.Router();
 
@@ -95,8 +96,13 @@ router.post('/operatore/tickets/:id/status', requireOperatore, (req, res) => {
     return res.redirect(`/operatore/tickets/${ticketId}`);
   }
 
+  const oldStatus = ticket.status;
   const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
-  ticketRepo.updateTicketStatus(ticketId, res.locals.currentUser.id, ticket.status, new_status, now);
+  ticketRepo.updateTicketStatus(ticketId, res.locals.currentUser.id, oldStatus, new_status, now);
+
+  const owner = userRepo.findById(ticket.user_id);
+  if (owner) emailService.sendStatusChangedEmail(owner.email, ticketId, oldStatus, new_status).catch(() => {});
+
   req.setFlash('success', `Stato aggiornato a "${new_status}".`);
   res.redirect(`/operatore/tickets/${ticketId}`);
 });
@@ -149,6 +155,12 @@ router.post('/operatore/tickets/:id/comments', requireOperatore, (req, res) => {
 
   const is_internal = isInternalStr === '1' ? 1 : 0;
   ticketRepo.addComment(ticketId, res.locals.currentUser.id, content.trim(), is_internal);
+
+  if (!is_internal) {
+    const owner = userRepo.findById(ticket.user_id);
+    if (owner) emailService.sendNewCommentEmail(owner.email, ticketId, res.locals.currentUser.name, false).catch(() => {});
+  }
+
   req.setFlash('success', is_internal ? 'Nota interna aggiunta.' : 'Risposta inviata al cliente.');
   res.redirect(`/operatore/tickets/${ticketId}`);
 });

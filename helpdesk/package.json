@@ -10,11 +10,13 @@
     "seed": "node src/db/seed.js"
   },
   "dependencies": {
+    "bcrypt": "^5",
+    "better-sqlite3": "^11",
+    "dotenv": "^17.4.2",
     "express": "^5",
     "express-handlebars": "^8",
     "express-session": "^1",
-    "better-sqlite3": "^11",
-    "bcrypt": "^5"
+    "nodemailer": "^8.0.9"
   },
   "engines": {
     "node": ">=20"

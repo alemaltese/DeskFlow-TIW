@@ -1,7 +1,8 @@
 'use strict';
-const express  = require('express');
-const bcrypt   = require('bcrypt');
-const userRepo = require('../repositories/users.repo');
+const express       = require('express');
+const bcrypt        = require('bcrypt');
+const userRepo      = require('../repositories/users.repo');
+const emailService  = require('../services/email.service');
 
 const router = express.Router();
 
@@ -78,6 +79,8 @@ router.post('/register', async (req, res) => {
   const result = userRepo.createUser(name.trim(), email.trim().toLowerCase(), hash, 'utente');
 
   req.session.userId = result.lastInsertRowid;
+
+  emailService.sendWelcomeEmail(email.trim().toLowerCase(), name.trim()).catch(() => {});
 
   req.setFlash('success', `Benvenuto, ${name.trim()}!`);
   res.redirect('/tickets');

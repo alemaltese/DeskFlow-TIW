@@ -2,8 +2,9 @@
 const express    = require('express');
 const bcrypt     = require('bcrypt');
 const { requireUtente } = require('../middleware/auth');
-const ticketRepo = require('../repositories/tickets.repo');
-const userRepo   = require('../repositories/users.repo');
+const ticketRepo   = require('../repositories/tickets.repo');
+const userRepo     = require('../repositories/users.repo');
+const emailService = require('../services/email.service');
 
 const router = express.Router();
 
@@ -58,7 +59,9 @@ router.post('/tickets', requireUtente, (req, res) => {
   }
 
   const operatorId = userRepo.getOperatorWithFewestTickets();
-  ticketRepo.createTicket(res.locals.currentUser.id, title.trim(), description.trim(), category, priority, operatorId);
+  const newTicketId = ticketRepo.createTicket(res.locals.currentUser.id, title.trim(), description.trim(), category, priority, operatorId);
+
+  emailService.sendTicketCreatedEmail(res.locals.currentUser.email, newTicketId, title.trim()).catch(() => {});
 
   req.setFlash('success', 'Ticket aperto con successo!');
   res.redirect('/tickets');
@@ -115,6 +118,12 @@ router.post('/tickets/:id/comments', requireUtente, (req, res) => {
   }
 
   ticketRepo.addComment(ticketId, res.locals.currentUser.id, content.trim(), 0);
+
+  if (ticket.assigned_to) {
+    const op = userRepo.findById(ticket.assigned_to);
+    if (op) emailService.sendNewCommentEmail(op.email, ticketId, res.locals.currentUser.name, true).catch(() => {});
+  }
+
   req.setFlash('success', 'Commento aggiunto.');
   res.redirect(`/tickets/${ticketId}`);
 });
