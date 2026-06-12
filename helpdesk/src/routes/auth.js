@@ -12,15 +12,23 @@ function homeFor(role) {
   return '/tickets';
 }
 
-// Gestisce la visualizzazione della pagina di accesso.
-// Se l'utente è già loggato, viene reindirizzato alla dashboard corrispondente al suo ruolo.
+/**
+ * Questa route si occupa di mostrare all'utente la schermata di login.
+ * Come misura di usabilità, prima di renderizzare la pagina verifica se l'utente 
+ * ha già una sessione attiva: in tal caso, anziché costringerlo a riautenticarsi,
+ * lo reindirizza automaticamente alla dashboard appropriata in base al suo ruolo (admin, operatore o utente).
+ */
 router.get('/login', (req, res) => {
   if (res.locals.currentUser) return res.redirect(homeFor(res.locals.currentUser.role));
   res.render('auth/login', { title: 'Accedi' });
 });
 
-// Elabora il tentativo di accesso dell'utente.
-// Verifica le credenziali (email e password) e, in caso di successo, inizializza la sessione.
+/**
+ * Qui viene elaborato l'invio del modulo di login. La funzione estrae le credenziali 
+ * fornite dall'utente, controlla che esistano nel database e verifica la validità 
+ * della password confrontandola con l'hash salvato. Se tutto è corretto, crea una 
+ * nuova sessione sicura e gestisce il redirect verso la pagina desiderata.
+ */
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -48,15 +56,23 @@ router.post('/login', async (req, res) => {
   res.redirect(returnTo || '/tickets');
 });
 
-// Mostra il modulo di registrazione per i nuovi utenti.
-// Anche qui, gli utenti già loggati vengono reindirizzati alla loro area personale.
+/**
+ * Questa route mostra il modulo per la registrazione di un nuovo utente.
+ * Analogamente alla pagina di login, se un utente è già connesso viene subito 
+ * reindirizzato alla propria area personale, evitando così che possa creare account 
+ * duplicati per sbaglio mentre è ancora autenticato nel sistema.
+ */
 router.get('/register', (req, res) => {
   if (res.locals.currentUser) return res.redirect(homeFor(res.locals.currentUser.role));
   res.render('auth/register', { title: 'Registrati' });
 });
 
-// Gestisce la creazione di un nuovo account utente.
-// Effettua la validazione dei dati, cripta la password e invia l'email di benvenuto.
+/**
+ * Questo endpoint riceve i dati del modulo di registrazione e si occupa di validare 
+ * attentamente tutti i campi (presenza dei dati, robustezza della password, ecc.).
+ * Se i controlli passano, genera un hash sicuro per la password, salva il nuovo utente 
+ * nel database, effettua il login automatico e gli invia anche un'email di benvenuto.
+ */
 router.post('/register', async (req, res) => {
   const { name, email, password, confirm_password } = req.body;
   const errors = [];
@@ -90,7 +106,11 @@ router.post('/register', async (req, res) => {
   res.redirect('/tickets');
 });
 
-// Termina la sessione dell'utente corrente e lo riporta alla pagina di login.
+/**
+ * Quando richiamata, questa route distrugge completamente la sessione corrente 
+ * dell'utente, rimuovendo qualsiasi traccia dei suoi dati in memoria, e lo riporta
+ * in totale sicurezza alla schermata di login iniziale.
+ */
 router.get('/logout', (req, res) => {
   req.session.destroy(() => res.redirect('/login'));
 });

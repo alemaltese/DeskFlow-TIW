@@ -10,8 +10,12 @@ const router = express.Router();
 
 const VALID_PRIORITY = ['bassa', 'media', 'alta', 'urgente'];
 
-// Visualizza la Dashboard dell'Operatore con i suoi KPI e riepiloghi.
-// Mostra il numero di ticket per stato, i ticket attualmente attivi, e le medie di valutazione.
+/**
+ * Questa è la vista principale dell'area privata dell'operatore. Qui vengono
+ * calcolati e presentati vari KPI (Key Performance Indicators) essenziali per 
+ * monitorare il proprio rendimento: i ticket aperti divisi per stato, il totale 
+ * di quelli risolti nel mese corrente e una sintesi della valutazione media ottenuta.
+ */
 router.get('/operatore/dashboard', requireOperatore, (req, res) => {
   const opId = res.locals.currentUser.id;
 
@@ -34,8 +38,12 @@ router.get('/operatore/dashboard', requireOperatore, (req, res) => {
   });
 });
 
-// Elenca tutti i ticket assegnati all'operatore corrente.
-// Permette di filtrare i risultati per stato, priorità, categoria e ricerca testuale.
+/**
+ * Mostra l'elenco completo di tutte le richieste di supporto che sono state
+ * direttamente prese in carico dall'operatore. Questa schermata fornisce anche
+ * un sistema di filtraggio che permette di restringere la lista per stato,
+ * priorità, categoria di appartenenza o effettuando una veloce ricerca testuale.
+ */
 router.get('/operatore/tickets', requireOperatore, (req, res) => {
   const { status, priority, category, search, sort } = req.query;
 
@@ -50,8 +58,12 @@ router.get('/operatore/tickets', requireOperatore, (req, res) => {
   });
 });
 
-// Mostra il dettaglio di un ticket specifico assegnato all'operatore.
-// Include tutti i messaggi, la cronologia degli stati e le eventuali valutazioni ricevute dall'utente.
+/**
+ * Quando l'operatore seleziona un ticket specifico, questa route ne mostra
+ * ogni dettaglio. Viene recuperata l'intera catena dei messaggi, così come
+ * lo storico degli eventi tecnici e, qualora l'utente abbia chiuso la pratica,
+ * anche le eventuali valutazioni e feedback inseriti sul lavoro svolto.
+ */
 router.get('/operatore/tickets/:id', requireOperatore, (req, res, next) => {
   const ticketId = parseInt(req.params.id, 10);
   if (isNaN(ticketId)) return next();
@@ -82,8 +94,12 @@ router.get('/operatore/tickets/:id', requireOperatore, (req, res, next) => {
   });
 });
 
-// Aggiorna lo stato di avanzamento del ticket (es. "in_corso", "risolto").
-// Registra l'evento nello storico e notifica l'utente via email.
+/**
+ * Questo endpoint serve all'operatore per far avanzare lo stato della pratica
+ * (ad esempio dichiarandola "in_corso" oppure "risolto"). Oltre a salvare il
+ * nuovo stato a database, il sistema registrerà l'operazione nello storico eventi
+ * e informerà tempestivamente il cliente che c'è stato un aggiornamento.
+ */
 router.post('/operatore/tickets/:id/status', requireOperatore, (req, res) => {
   const ticketId = parseInt(req.params.id, 10);
   const ticket   = ticketRepo.findById(ticketId);
@@ -118,8 +134,12 @@ router.post('/operatore/tickets/:id/status', requireOperatore, (req, res) => {
   res.redirect(`/operatore/tickets/${ticketId}`);
 });
 
-// Permette all'operatore di modificare la priorità del ticket assegnato.
-// La priorità non può essere cambiata se il ticket è già stato risolto o chiuso.
+/**
+ * Se la gravità di una segnalazione dovesse cambiare nel corso dell'analisi,
+ * l'operatore può utilizzare questo endpoint per scalarne la priorità. Tuttavia,
+ * a fini di storico, la priorità viene bloccata e non può più essere alterata
+ * una volta che la pratica è già considerata risolta o chiusa definitivamente.
+ */
 router.post('/operatore/tickets/:id/priority', requireOperatore, (req, res) => {
   const ticketId = parseInt(req.params.id, 10);
   const ticket   = ticketRepo.findById(ticketId);
@@ -148,8 +168,12 @@ router.post('/operatore/tickets/:id/priority', requireOperatore, (req, res) => {
   res.redirect(`/operatore/tickets/${ticketId}`);
 });
 
-// Aggiunge un nuovo commento al ticket.
-// L'operatore può scegliere se inserire una "Nota interna" (visibile solo allo staff) o rispondere al cliente (pubblico).
+/**
+ * Consente l'aggiunta di messaggi alla conversazione del ticket. Un dettaglio 
+ * fondamentale di questa route è la capacità di gestire le cosiddette "Note Interne":
+ * flaggando l'apposita casella, l'operatore può scrivere appunti tecnici visibili
+ * soltanto allo staff, senza che il cliente finale possa leggerli.
+ */
 router.post('/operatore/tickets/:id/comments', requireOperatore, (req, res) => {
   const ticketId = parseInt(req.params.id, 10);
   const ticket   = ticketRepo.findById(ticketId);
@@ -182,12 +206,19 @@ router.post('/operatore/tickets/:id/comments', requireOperatore, (req, res) => {
   res.redirect(`/operatore/tickets/${ticketId}`);
 });
 
-// Mostra la pagina di gestione del profilo personale dell'operatore.
+/**
+ * Apre la schermata personale in cui l'operatore può visionare le proprie
+ * informazioni di accesso, come il nome di sistema e l'indirizzo email.
+ */
 router.get('/operatore/profilo', requireOperatore, (req, res) => {
   res.render('operatore/profilo', { title: 'Il mio profilo', user: res.locals.currentUser });
 });
 
-// Salva le modifiche al profilo dell'operatore (nome, email, password).
+/**
+ * Endpoint che riceve le modifiche ai dati di profilo dell'operatore.
+ * Gestisce l'aggiornamento dell'email (verificando che non sia già presa)
+ * e, ove richiesto, gestisce il cambio password in modo sicuro controllando l'hash.
+ */
 router.post('/operatore/profilo', requireOperatore, async (req, res) => {
   const { name, email, old_password, new_password, confirm_password } = req.body;
 

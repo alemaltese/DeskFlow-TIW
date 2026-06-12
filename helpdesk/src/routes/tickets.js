@@ -11,8 +11,12 @@ const router = express.Router();
 const CATEGORIES = ['tecnico', 'account', 'fatturazione', 'altro'];
 const PRIORITIES = ['bassa', 'media', 'alta', 'urgente'];
 
-// Visualizza l'elenco di tutti i ticket creati dall'utente corrente.
-// I ticket vengono recuperati e numerati progressivamente in base alla cronologia.
+/**
+ * Questa route è responsabile di visualizzare l'elenco completo dei ticket che sono stati
+ * aperti dall'utente correntemente loggato. I dati vengono recuperati dal database e
+ * ad ogni ticket viene aggiunta una numerazione progressiva, utile per mostrare una tabella
+ * ordinata e facilmente consultabile sul frontend.
+ */
 router.get('/tickets', requireUtente, (req, res) => {
   const tickets = ticketRepo.findByUserId(res.locals.currentUser.id);
   const total = tickets.length;
@@ -23,8 +27,12 @@ router.get('/tickets', requireUtente, (req, res) => {
   res.render('utente/list', { title: 'I miei ticket', tickets: mappedTickets });
 });
 
-// Mostra il modulo per l'apertura di un nuovo ticket.
-// L'accesso è limitato ai soli utenti (operatori e admin non possono creare ticket).
+/**
+ * Prepara e mostra il modulo HTML necessario per l'inserimento di un nuovo ticket.
+ * Poiché solo i clienti standard (utenti) dovrebbero avere la necessità di aprire ticket,
+ * la route effettua un controllo di sicurezza sul ruolo: operatori e admin verranno bloccati
+ * con un messaggio di errore e reindirizzati.
+ */
 router.get('/tickets/new', requireUtente, (req, res) => {
   if (res.locals.currentUser.role !== 'utente') {
     req.setFlash('error', 'Solo gli utenti possono aprire ticket.');
@@ -37,8 +45,12 @@ router.get('/tickets/new', requireUtente, (req, res) => {
   });
 });
 
-// Gestisce la creazione di un nuovo ticket.
-// Verifica i campi inseriti, assegna automaticamente il ticket all'operatore più libero e invia la notifica via email.
+/**
+ * Questo endpoint riceve i dati del form di apertura ticket e li processa.
+ * Esegue una validazione stringente su titolo, descrizione, categoria e priorità.
+ * Se tutto è corretto, seleziona in automatico l'operatore attualmente più scarico (con meno ticket),
+ * gli assegna la nuova richiesta, salva tutto a database e invia all'utente un'email di conferma.
+ */
 router.post('/tickets', requireUtente, (req, res) => {
   if (res.locals.currentUser.role !== 'utente') {
     req.setFlash('error', 'Solo gli utenti possono aprire ticket.');
@@ -75,8 +87,12 @@ router.post('/tickets', requireUtente, (req, res) => {
   res.redirect('/tickets');
 });
 
-// Visualizza i dettagli completi di un ticket specifico dell'utente.
-// Recupera le informazioni del ticket, i commenti scambiati, lo storico degli stati e l'eventuale valutazione.
+/**
+ * Mostra la pagina di dettaglio di un singolo ticket selezionato dall'utente.
+ * In questa vista non viene caricato solo il ticket stesso, ma vengono agglomerati
+ * anche tutti i messaggi scambiati, lo storico degli stati attraversati e, se presente,
+ * l'eventuale valutazione finale rilasciata dall'utente sul servizio.
+ */
 router.get('/tickets/:id', requireUtente, (req, res, next) => {
   const ticketId = parseInt(req.params.id, 10);
   if (isNaN(ticketId)) return next();
@@ -106,8 +122,12 @@ router.get('/tickets/:id', requireUtente, (req, res, next) => {
   });
 });
 
-// Aggiunge un nuovo commento al ticket.
-// Solo per i ticket aperti. Se assegnato a un operatore, invia una notifica email.
+/**
+ * Gestisce l'inserimento di una nuova risposta da parte dell'utente all'interno del ticket.
+ * Verifica che il ticket non sia chiuso, poiché in quel caso non sono ammessi nuovi messaggi.
+ * Se l'inserimento va a buon fine, il sistema si occupa di avvisare immediatamente tramite email
+ * l'operatore assegnato, così che possa prendere visione dell'aggiornamento.
+ */
 router.post('/tickets/:id/comments', requireUtente, (req, res) => {
   const ticketId = parseInt(req.params.id, 10);
   const ticket   = ticketRepo.findById(ticketId);
@@ -138,8 +158,12 @@ router.post('/tickets/:id/comments', requireUtente, (req, res) => {
   res.redirect(`/tickets/${ticketId}`);
 });
 
-// Chiude un ticket precedentemente "risolto".
-// Permette all'utente di aggiungere opzionalmente una valutazione (da 1 a 5 stelle) e una nota sul servizio ricevuto.
+/**
+ * Permette all'utente di chiudere definitivamente un ticket che l'operatore aveva marcato
+ * come "risolto". In questa fase finale, all'utente viene anche offerta la possibilità
+ * opzionale di lasciare un feedback sotto forma di punteggio a stelle (da 1 a 5)
+ * accompagnato da un breve commento sul servizio ricevuto.
+ */
 router.post('/tickets/:id/chiudi', requireUtente, (req, res) => {
   const ticketId = parseInt(req.params.id, 10);
   const ticket   = ticketRepo.findById(ticketId);
@@ -161,8 +185,11 @@ router.post('/tickets/:id/chiudi', requireUtente, (req, res) => {
   res.redirect(`/tickets/${ticketId}`);
 });
 
-// Riapre un ticket che era stato chiuso se il problema si è ripresentato.
-// Riporta lo stato del ticket su "aperto".
+/**
+ * Se l'utente dovesse accorgersi che un problema segnalato come "chiuso" in realtà
+ * persiste o si è ripresentato, questa route gli consente di forzarne la riapertura.
+ * Lo stato del ticket tornerà ad essere "aperto" in modo che l'operatore debba lavorarci di nuovo.
+ */
 router.post('/tickets/:id/riapri', requireUtente, (req, res) => {
   const ticketId = parseInt(req.params.id, 10);
   const ticket   = ticketRepo.findById(ticketId);
@@ -181,7 +208,10 @@ router.post('/tickets/:id/riapri', requireUtente, (req, res) => {
   res.redirect(`/tickets/${ticketId}`);
 });
 
-// Mostra la pagina di gestione del profilo personale dell'utente.
+/**
+ * Mostra la pagina personale dove l'utente può visualizzare e gestire i dati 
+ * relativi al proprio account, come nome, email e password.
+ */
 router.get('/profilo', requireUtente, (req, res) => {
   if (res.locals.currentUser.role !== 'utente') {
     return res.redirect(`/${res.locals.currentUser.role}/profilo`);
@@ -189,8 +219,11 @@ router.get('/profilo', requireUtente, (req, res) => {
   res.render('utente/profilo', { title: 'Il mio profilo', user: res.locals.currentUser });
 });
 
-// Salva le modifiche al profilo utente (nome, email, password).
-// Effettua la validazione dei campi e l'eventuale criptazione della nuova password.
+/**
+ * Processa il modulo di aggiornamento dei dati del profilo. Se i campi sono validi
+ * (come un'email corretta e non duplicata nel sistema), le informazioni vengono salvate.
+ * In caso di cambio password, il sistema verificherà la vecchia password e cripterà la nuova.
+ */
 router.post('/profilo', requireUtente, async (req, res) => {
   if (res.locals.currentUser.role !== 'utente') {
     req.setFlash('error', 'Operazione non consentita.');

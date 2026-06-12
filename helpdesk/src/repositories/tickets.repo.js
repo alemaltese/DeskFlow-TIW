@@ -11,8 +11,14 @@ const VALID_STATUS   = ['aperto', 'in_corso', 'risolto', 'chiuso'];
 const VALID_PRIORITY = ['bassa', 'media', 'alta', 'urgente'];
 const VALID_CATEGORY = ['tecnico', 'account', 'fatturazione', 'altro'];
 
-// Query di lettura di base
-// Recuperano dati primari dei ticket (singoli, per utente o dettagliati).
+/**
+ * ==========================================
+ * QUERY DI LETTURA DI BASE
+ * ==========================================
+ * Questa sezione raccoglie le query fondamentali per il recupero delle informazioni
+ * di base dei ticket, come la ricerca per ID, la lista dei ticket di un utente
+ * o la visualizzazione dettagliata dei dati incrociati con le anagrafiche.
+ */
 const findByIdStmt = db.prepare(`SELECT * FROM v_tickets WHERE id = ?`);
 
 const getUserTicketIndexStmt = db.prepare(`
@@ -44,8 +50,14 @@ const findAdminDetailByIdStmt = db.prepare(`
   WHERE t.id = ?
 `);
 
-// Query per Commenti e Storico
-// Recuperano i messaggi scambiati, gli eventi di cambio stato/priorità e le valutazioni finali.
+/**
+ * ==========================================
+ * QUERY PER COMMENTI E STORICO
+ * ==========================================
+ * Qui vengono definite le interrogazioni relative alle comunicazioni (commenti)
+ * e alla tracciabilità degli eventi. Recuperano l'intera cronologia dei passaggi
+ * di stato e le valutazioni finali rilasciate dai clienti.
+ */
 const getPublicCommentsStmt = db.prepare(`
   SELECT c.*, u.name AS author_name, u.role AS author_role
   FROM comments c
@@ -72,8 +84,14 @@ const getHistoryStmt = db.prepare(`
 
 const getRatingStmt = db.prepare(`SELECT * FROM ratings WHERE ticket_id = ?`);
 
-// Query per la Dashboard Operatore
-// Calcolano i KPI specifici per l'operatore (ticket assegnati, risolti nel mese, valutazione media).
+/**
+ * ==========================================
+ * QUERY PER LA DASHBOARD OPERATORE
+ * ==========================================
+ * Raggruppa gli statement necessari a calcolare gli indicatori di performance (KPI)
+ * specifici per la vista dell'operatore: i ticket a lui assegnati suddivisi per stato,
+ * quelli risolti nel corso del mese e la valutazione media del suo operato.
+ */
 const getStatusCountsByOperatorStmt = db.prepare(`
   SELECT status, COUNT(*) AS n
   FROM tickets
@@ -103,8 +121,14 @@ const getAvgRatingByOperatorStmt = db.prepare(`
   WHERE t.assigned_to = ?
 `);
 
-// Query per la Dashboard Amministratore
-// Forniscono panoramiche globali (conteggi totali, ticket non assegnati, carichi di lavoro).
+/**
+ * ==========================================
+ * QUERY PER LA DASHBOARD AMMINISTRATORE
+ * ==========================================
+ * Serie di interrogazioni che forniscono panoramiche a livello globale sull'intero
+ * sistema di helpdesk. Calcolano i totali assoluti, evidenziano eventuali ticket
+ * rimasti in sospeso senza assegnazione e restituiscono i carichi di lavoro attuali.
+ */
 const getTicketCountsAdminStmt = db.prepare(`
   SELECT
     COUNT(*) AS total,
@@ -145,8 +169,14 @@ const getRecentTicketsStmt = db.prepare(`
   LIMIT 5
 `);
 
-// Statement di Scrittura
-// Query base per inserimento e aggiornamento dei record nel database.
+/**
+ * ==========================================
+ * STATEMENT DI SCRITTURA
+ * ==========================================
+ * Queste query si occupano dell'inserimento (INSERT), aggiornamento (UPDATE) e 
+ * cancellazione (DELETE) dei record. Costituiscono i mattoni base utilizzati
+ * successivamente dalle transazioni complesse per alterare lo stato del sistema.
+ */
 const insertTicketStmt = db.prepare(`
   INSERT INTO tickets (user_id, title, description, category, priority, status, assigned_to)
   VALUES (?, ?, ?, ?, ?, 'aperto', ?)
@@ -176,8 +206,15 @@ const updateAssignedToStmt    = db.prepare(`UPDATE tickets SET assigned_to = ?, 
 
 const updatePriorityCurTsStmt  = db.prepare(`UPDATE tickets SET priority = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`);
 
-// Transazioni di Scrittura
-// Raggruppano in un'unica operazione (Atomica) le modifiche al ticket e il relativo aggiornamento dello storico.
+/**
+ * ==========================================
+ * TRANSAZIONI DI SCRITTURA
+ * ==========================================
+ * Le transazioni raggruppano più operazioni di scrittura in un'unica unità atomica.
+ * Questo garantisce l'integrità dei dati: ad esempio, se si cambia lo stato di un
+ * ticket, viene contestualmente salvata la traccia nello storico senza rischio
+ * di inconsistenze in caso di errore.
+ */
 const createTicketTx = db.transaction((userId, title, description, category, priority, assignedTo) => {
   const result = insertTicketStmt.run(userId, title, description, category, priority, assignedTo);
   insertHistoryStmt.run(result.lastInsertRowid, userId, 'status', '', 'aperto');
@@ -227,8 +264,13 @@ const assignTicketTx = db.transaction((ticketId, userId, newOpId, oldOpName, new
   }
 });
 
-// Wrapper Funzioni di Lettura
-// Esportano l'esecuzione degli Statement preparati per l'uso nei controller.
+/**
+ * ==========================================
+ * WRAPPER FUNZIONI DI LETTURA
+ * ==========================================
+ * Queste funzioni fungono da interfaccia pubblica del modulo per i controller.
+ * Espongono in modo pulito l'esecuzione dei vari statement preparati in precedenza.
+ */
 function findById(id)                { return findByIdStmt.get(id); }
 function getUserTicketIndex(id)      { 
   const res = getUserTicketIndexStmt.get(id, id);
@@ -251,7 +293,8 @@ function getUnassignedTickets()          { return getUnassignedTicketsStmt.all()
 function getOperatorWorkload()           { return getOperatorWorkloadStmt.all(); }
 function getRecentTickets()              { return getRecentTicketsStmt.all(); }
 
-// NOTE: dynamic query — prepared at call time because WHERE clause varies per request
+// NOTA: Questa è una query dinamica. Viene costruita ed eseguita "on the fly"
+// poiché la clausola WHERE dipende dai parametri di filtraggio richiesti dal client.
 function filterOperatorTickets(operatorId, { status, priority, category, search, sort } = {}) {
   const conditions = ['t.assigned_to = ?'];
   const params     = [operatorId];
@@ -274,7 +317,8 @@ function filterOperatorTickets(operatorId, { status, priority, category, search,
   `).all(...params);
 }
 
-// NOTE: dynamic query — prepared at call time because WHERE clause varies per request
+// NOTA: Come per l'operatore, questa è una query dinamica costruita a runtime
+// per supportare i filtri avanzati della dashboard amministratore.
 function filterAdminTickets({ status, priority, category, assigned_to, search, sort } = {}) {
   const conditions = [];
   const params     = [];
@@ -305,8 +349,13 @@ function filterAdminTickets({ status, priority, category, assigned_to, search, s
   `).all(...params);
 }
 
-// Wrapper Funzioni di Scrittura
-// Espongono le transazioni in modo che siano utilizzabili esternamente dai controller.
+/**
+ * ==========================================
+ * WRAPPER FUNZIONI DI SCRITTURA
+ * ==========================================
+ * Interfaccia pubblica per richiamare le transazioni di modifica in modo semplice.
+ * Isolano i controller dalla complessità dell'accesso ai dati sottostante.
+ */
 function createTicket(userId, title, description, category, priority, assignedTo) {
   return createTicketTx(userId, title, description, category, priority, assignedTo);
 }

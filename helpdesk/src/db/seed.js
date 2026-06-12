@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 const Database = require('better-sqlite3');
 const path = require('path');
 const bcrypt = require('bcrypt');
@@ -15,6 +15,7 @@ const seed = db.transaction(() => {
     DELETE FROM comments;
     DELETE FROM tickets;
     DELETE FROM users;
+    DELETE FROM sqlite_sequence;
   `);
 
   const insertUser = db.prepare(

@@ -2,9 +2,15 @@
 'use strict';
 const db = require('../db/connection');
 
-// Query di Lettura
-
-// Preparazione degli statement SQL per recuperare dati base degli utenti.
+/**
+ * ==========================================
+ * QUERY DI LETTURA
+ * ==========================================
+ * Di seguito sono definiti e preparati gli statement SQL per l'estrazione e 
+ * la lettura sicura delle informazioni legate agli utenti. Utilizzando i prepared 
+ * statements (`db.prepare`), l'applicazione si protegge preventivamente 
+ * contro attacchi di tipo SQL Injection.
+ */
 const findByEmailStmt              = db.prepare(`SELECT * FROM users WHERE email = ?`);
 const findIdByEmailStmt            = db.prepare(`SELECT id FROM users WHERE email = ?`);
 const findIdByEmailExcludingStmt   = db.prepare(`SELECT id FROM users WHERE email = ? AND id != ?`);
