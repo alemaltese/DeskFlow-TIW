@@ -10,7 +10,7 @@ Applicazione web di helpdesk per la gestione di ticket di supporto, sviluppata c
 |---|---|
 | **Utente** | Registrazione / login, apertura ticket con categoria e priorità, commenti pubblici, chiusura con valutazione a stelle (1–5), riapertura ticket chiusi, modifica profilo e password |
 | **Operatore** | Dashboard personale con KPI, lista ticket assegnati con filtri, cambio stato (in_corso / risolto), modifica priorità, commenti pubblici e note interne (visibili solo allo staff), modifica profilo |
-| **Admin** | Dashboard globale con workload operatori, lista ticket con filtri avanzati, assegnazione manuale e auto-assign (operatore con meno ticket attivi), cambio stato / priorità, commenti, gestione utenti (CRUD), analytics avanzate, profilo |
+| **Admin** | Dashboard globale con workload operatori, lista ticket con filtri avanzati, assegnazione manuale e auto-assign (operatore con meno ticket attivi), cambio stato / priorità, commenti, gestione utenti (CRUD), profilo |
 
 ---
 
@@ -24,6 +24,8 @@ Applicazione web di helpdesk per la gestione di ticket di supporto, sviluppata c
 | Template engine | `express-handlebars` ^8 (layout + partials) |
 | Sessioni | `express-session` ^1 |
 | Hash password | `bcrypt` ^5 |
+| Variabili ambiente | `dotenv` ^17.4.2 |
+| Invio email | `nodemailer` ^8.0.9 |
 
 ---
 
@@ -45,14 +47,15 @@ helpdesk/
 │   │   └── flash.js             # req.setFlash / res.locals.flash
 │   ├── repositories/
 │   │   ├── users.repo.js        # query su users
-│   │   ├── tickets.repo.js      # query su tickets, comments, status_history, ratings
-│   │   └── stats.repo.js        # query di analytics (sola lettura)
+│   │   └── tickets.repo.js      # query su tickets, comments, status_history, ratings
 │   ├── routes/
 │   │   ├── auth.js              # /login, /register, /logout
 │   │   ├── tickets.js           # /tickets/* (utente)
 │   │   ├── operatore.js         # /operatore/* (operatore)
 │   │   ├── admin.js             # /admin/* — ticket + utenti (admin)
-│   │   └── stats.js             # /admin/stats (admin)
+│   │   └── api.js               # /api/tickets/:id/status (polling JSON)
+│   ├── services/
+│   │   └── email.service.js     # Servizio invio email (Nodemailer)
 │   └── server.js                # bootstrap Express, middleware globali, error handler
 └── views/
     ├── layouts/main.hbs          # layout principale (navbar, flash)
@@ -61,7 +64,7 @@ helpdesk/
     ├── auth/                     # login, register
     ├── utente/                   # list, new, detail, profilo
     ├── operatore/                # dashboard, list, ticket-detail, profilo
-    ├── admin/                    # dashboard, list, ticket-detail, utenti, utente-form, stats, profilo
+    ├── admin/                    # dashboard, list, ticket-detail, utenti, utente-form, profilo
     └── errors/                   # 404, 500
 ```
 
@@ -105,10 +108,10 @@ ratings
 
 ### Repository Pattern
 
-Tutto il codice SQL è isolato nei tre file `src/repositories/*.repo.js`. Le route HTTP non contengono query: chiamano solo funzioni esportate dai repository.
+Tutto il codice SQL è isolato nei file `src/repositories/*.repo.js`. Le route HTTP non contengono query: chiamano solo funzioni esportate dai repository.
 
 - **Prepared statement a livello di modulo** — ogni `db.prepare(...)` statico viene eseguito una sola volta al caricamento del modulo, con overhead zero a runtime.
-- **Query dinamiche** — `filterOperatorTickets`, `filterAdminTickets` e `buildTrend` costruiscono la clausola `WHERE` in base ai parametri ricevuti; in questi casi `db.prepare()` è all'interno della funzione (documentato con `// NOTE: dynamic query`).
+- **Query dinamiche** — `filterOperatorTickets` e `filterAdminTickets` costruiscono la clausola `WHERE` in base ai parametri ricevuti; in questi casi `db.prepare()` è all'interno della funzione (documentato con `// NOTE: dynamic query`).
 - **Transazioni** — le operazioni multi-tabella (`createTicket`, `closeTicket`, `reopenTicket`, `updateTicketStatus`, `assignTicket`, …) sono avvolte in `db.transaction()` per garantire atomicità.
 
 ### Sessione snella
@@ -221,4 +224,4 @@ Tutti gli utenti usano la password **`password`**.
 | GET/POST | `/admin/utenti/nuovo` | admin | Crea nuovo utente |
 | GET/POST | `/admin/utenti/:id/modifica` | admin | Modifica utente esistente |
 | GET | `/admin/profilo` | admin | Profilo admin |
-| GET | `/admin/stats` | admin | Analytics avanzate |
+| GET | `/api/tickets/:id/status` | utente | Polling stato ticket (JSON) |
