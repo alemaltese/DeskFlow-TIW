@@ -109,8 +109,7 @@ router.post('/operatore/tickets/:id/status', requireOperatore, (req, res) => {
   }
 
   const oldStatus = ticket.status;
-  const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
-  ticketRepo.updateTicketStatus(ticketId, res.locals.currentUser.id, oldStatus, new_status, now);
+  ticketRepo.updateTicketStatus(ticketId, res.locals.currentUser.id, oldStatus, new_status);
 
   const owner = userRepo.findById(ticket.user_id);
   if (owner) emailService.sendStatusChangedEmail(owner.email, ticketId, oldStatus, new_status).catch(() => {});
@@ -144,8 +143,7 @@ router.post('/operatore/tickets/:id/priority', requireOperatore, (req, res) => {
     return res.redirect(`/operatore/tickets/${ticketId}`);
   }
 
-  const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
-  ticketRepo.updateTicketPriority(ticketId, res.locals.currentUser.id, ticket.priority, new_priority, now);
+  ticketRepo.updateTicketPriority(ticketId, res.locals.currentUser.id, ticket.priority, new_priority);
   req.setFlash('success', `Priorità aggiornata a "${new_priority}".`);
   res.redirect(`/operatore/tickets/${ticketId}`);
 });

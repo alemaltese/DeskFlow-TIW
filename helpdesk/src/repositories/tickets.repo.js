@@ -157,10 +157,6 @@ const insertHistoryStmt = db.prepare(`
   VALUES (?, ?, ?, ?, ?)
 `);
 
-const insertHistoryWithTsStmt = db.prepare(`
-  INSERT INTO status_history (ticket_id, changed_by, event_type, old_value, new_value, changed_at)
-  VALUES (?, ?, ?, ?, ?, ?)
-`);
 
 const insertCommentStmt = db.prepare(`
   INSERT INTO comments (ticket_id, user_id, content, is_internal)
@@ -174,10 +170,10 @@ const insertRatingStmt = db.prepare(`
 
 const deleteRatingStmt = db.prepare(`DELETE FROM ratings WHERE ticket_id = ?`);
 
-const updateStatusWithTsStmt  = db.prepare(`UPDATE tickets SET status = ?, updated_at = ? WHERE id = ?`);
+
 const updateStatusCurTsStmt   = db.prepare(`UPDATE tickets SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`);
 const updateAssignedToStmt    = db.prepare(`UPDATE tickets SET assigned_to = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`);
-const updatePriorityWithTsStmt = db.prepare(`UPDATE tickets SET priority = ?, updated_at = ? WHERE id = ?`);
+
 const updatePriorityCurTsStmt  = db.prepare(`UPDATE tickets SET priority = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`);
 
 // Transazioni di Scrittura
@@ -188,28 +184,28 @@ const createTicketTx = db.transaction((userId, title, description, category, pri
   return result.lastInsertRowid;
 });
 
-const closeTicketTx = db.transaction((ticketId, userId, now, score, note) => {
-  updateStatusWithTsStmt.run('chiuso', now, ticketId);
-  insertHistoryWithTsStmt.run(ticketId, userId, 'status', 'risolto', 'chiuso', now);
+const closeTicketTx = db.transaction((ticketId, userId, score, note) => {
+  updateStatusCurTsStmt.run('chiuso', ticketId);
+  insertHistoryStmt.run(ticketId, userId, 'status', 'risolto', 'chiuso');
   if (score >= 1 && score <= 5) {
     insertRatingStmt.run(ticketId, userId, score, note);
   }
 });
 
-const reopenTicketTx = db.transaction((ticketId, userId, now) => {
-  updateStatusWithTsStmt.run('aperto', now, ticketId);
-  insertHistoryWithTsStmt.run(ticketId, userId, 'status', 'chiuso', 'aperto', now);
+const reopenTicketTx = db.transaction((ticketId, userId) => {
+  updateStatusCurTsStmt.run('aperto', ticketId);
+  insertHistoryStmt.run(ticketId, userId, 'status', 'chiuso', 'aperto');
   deleteRatingStmt.run(ticketId);
 });
 
-const updateTicketStatusTx = db.transaction((ticketId, userId, oldStatus, newStatus, now) => {
-  updateStatusWithTsStmt.run(newStatus, now, ticketId);
-  insertHistoryWithTsStmt.run(ticketId, userId, 'status', oldStatus, newStatus, now);
+const updateTicketStatusTx = db.transaction((ticketId, userId, oldStatus, newStatus) => {
+  updateStatusCurTsStmt.run(newStatus, ticketId);
+  insertHistoryStmt.run(ticketId, userId, 'status', oldStatus, newStatus);
 });
 
-const updateTicketPriorityTx = db.transaction((ticketId, userId, oldPriority, newPriority, now) => {
-  updatePriorityWithTsStmt.run(newPriority, now, ticketId);
-  insertHistoryWithTsStmt.run(ticketId, userId, 'priority', oldPriority, newPriority, now);
+const updateTicketPriorityTx = db.transaction((ticketId, userId, oldPriority, newPriority) => {
+  updatePriorityCurTsStmt.run(newPriority, ticketId);
+  insertHistoryStmt.run(ticketId, userId, 'priority', oldPriority, newPriority);
 });
 
 const updateAdminStatusTx = db.transaction((ticketId, userId, oldStatus, newStatus) => {
@@ -317,17 +313,17 @@ function createTicket(userId, title, description, category, priority, assignedTo
 function addComment(ticketId, userId, content, isInternal) {
   return insertCommentStmt.run(ticketId, userId, content, isInternal);
 }
-function closeTicket(ticketId, userId, now, score, note) {
-  return closeTicketTx(ticketId, userId, now, score, note);
+function closeTicket(ticketId, userId, score, note) {
+  return closeTicketTx(ticketId, userId, score, note);
 }
-function reopenTicket(ticketId, userId, now) {
-  return reopenTicketTx(ticketId, userId, now);
+function reopenTicket(ticketId, userId) {
+  return reopenTicketTx(ticketId, userId);
 }
-function updateTicketStatus(ticketId, userId, oldStatus, newStatus, now) {
-  return updateTicketStatusTx(ticketId, userId, oldStatus, newStatus, now);
+function updateTicketStatus(ticketId, userId, oldStatus, newStatus) {
+  return updateTicketStatusTx(ticketId, userId, oldStatus, newStatus);
 }
-function updateTicketPriority(ticketId, userId, oldPriority, newPriority, now) {
-  return updateTicketPriorityTx(ticketId, userId, oldPriority, newPriority, now);
+function updateTicketPriority(ticketId, userId, oldPriority, newPriority) {
+  return updateTicketPriorityTx(ticketId, userId, oldPriority, newPriority);
 }
 function assignTicket(ticketId, userId, newOpId, oldOpName, newOpName, currentStatus) {
   return assignTicketTx(ticketId, userId, newOpId, oldOpName, newOpName, currentStatus);

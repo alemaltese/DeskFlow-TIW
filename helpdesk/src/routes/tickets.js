@@ -153,11 +153,10 @@ router.post('/tickets/:id/chiudi', requireUtente, (req, res) => {
     return res.redirect(`/tickets/${ticketId}`);
   }
 
-  const now   = new Date().toISOString().replace('T', ' ').slice(0, 19);
   const score = parseInt(req.body.score, 10);
   const note  = req.body.note ? req.body.note.trim() || null : null;
 
-  ticketRepo.closeTicket(ticketId, res.locals.currentUser.id, now, score, note);
+  ticketRepo.closeTicket(ticketId, res.locals.currentUser.id, score, note);
   req.setFlash('success', 'Ticket chiuso. Grazie per la valutazione!');
   res.redirect(`/tickets/${ticketId}`);
 });
@@ -177,8 +176,7 @@ router.post('/tickets/:id/riapri', requireUtente, (req, res) => {
     return res.redirect(`/tickets/${ticketId}`);
   }
 
-  const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
-  ticketRepo.reopenTicket(ticketId, res.locals.currentUser.id, now);
+  ticketRepo.reopenTicket(ticketId, res.locals.currentUser.id);
   req.setFlash('success', 'Ticket riaperto con successo.');
   res.redirect(`/tickets/${ticketId}`);
 });
