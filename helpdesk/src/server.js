@@ -17,7 +17,6 @@ const apiRouter        = require('./routes/api');
 
 const app = express();
 
-// ── Handlebars ─────────────────────────────────────────────────────────────
 app.engine('hbs', engine({
   extname: '.hbs',
   layoutsDir:   path.join(__dirname, '../views/layouts'),
@@ -48,12 +47,10 @@ app.engine('hbs', engine({
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, '../views'));
 
-// ── Static + body ──────────────────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// ── Session ────────────────────────────────────────────────────────────────
 app.use(session({
   name: 'connect.sid',
   secret: 'helpdesk-secret',
@@ -66,10 +63,8 @@ app.use(session({
   },
 }));
 
-// ── Flash ──────────────────────────────────────────────────────────────────
 app.use(flashMiddleware);
 
-// ── Current user in locals (navbar) ───────────────────────────────────────
 app.use((req, res, next) => {
   const u = req.session.userId ? usersRepo.findById(req.session.userId) : null;
   res.locals.currentUser = u;
@@ -79,7 +74,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// ── Routes ─────────────────────────────────────────────────────────────────
 app.get('/', (req, res) => {
   const u = res.locals.currentUser;
   if (!u) return res.render('home', { title: 'Helpdesk' });
@@ -94,7 +88,6 @@ app.use('/', operatoreRouter);
 app.use('/', adminRouter);
 app.use('/', apiRouter);
 
-// ── 404 ────────────────────────────────────────────────────────────────────
 app.use((req, res) => {
   if (req.accepts('html')) {
     return res.status(404).render('errors/404', {
@@ -105,7 +98,6 @@ app.use((req, res) => {
   res.status(404).json({ error: 'not_found', path: req.originalUrl });
 });
 
-// ── 500 ────────────────────────────────────────────────────────────────────
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, _next) => {
   console.error('[500]', err);

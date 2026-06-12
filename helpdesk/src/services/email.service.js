@@ -1,6 +1,5 @@
 'use strict';
 
-// ── Email service (Gmail SMTP) ─────────────────────────────────────────────
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
@@ -56,7 +55,6 @@ function wrapHtml(title, content) {
 
 const ticketRepo = require('../repositories/tickets.repo');
 
-// ── sendWelcomeEmail ───────────────────────────────────────────────────────
 async function sendWelcomeEmail(userEmail, userName, tempPassword = null) {
   const subject = 'Benvenuto su DeskFlow';
   const text    = `Ciao ${userName},\n\nIl tuo account DeskFlow è stato creato con successo.${tempPassword ? `\nLa tua password temporanea: ${tempPassword}` : ''}\n\nBuon lavoro!`;
@@ -71,7 +69,6 @@ async function sendWelcomeEmail(userEmail, userName, tempPassword = null) {
   await send(userEmail, subject, text, wrapHtml('Benvenuto a bordo!', content));
 }
 
-// ── sendTicketCreatedEmail ─────────────────────────────────────────────────
 async function sendTicketCreatedEmail(userEmail, ticketId, title) {
   const userIndex = ticketRepo.getUserTicketIndex(ticketId);
   const subject = `Ticket #${userIndex} aperto con successo`;
@@ -84,7 +81,6 @@ async function sendTicketCreatedEmail(userEmail, ticketId, title) {
   await send(userEmail, subject, text, wrapHtml(`Conferma apertura ticket #${userIndex}`, content));
 }
 
-// ── sendTicketAssignedEmail ────────────────────────────────────────────────
 async function sendTicketAssignedEmail(recipientEmail, ticketId, title, isToUser = false) {
   const displayId = isToUser ? ticketRepo.getUserTicketIndex(ticketId) : ticketId;
   const subject = isToUser
@@ -102,7 +98,6 @@ async function sendTicketAssignedEmail(recipientEmail, ticketId, title, isToUser
   await send(recipientEmail, subject, body, wrapHtml(headerTitle, content));
 }
 
-// ── sendStatusChangedEmail ─────────────────────────────────────────────────
 async function sendStatusChangedEmail(userEmail, ticketId, oldStatus, newStatus) {
   const userIndex = ticketRepo.getUserTicketIndex(ticketId);
   const subject  = `Aggiornamento stato: Ticket #${userIndex}`;

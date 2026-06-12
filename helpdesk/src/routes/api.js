@@ -2,7 +2,7 @@
 
 // API JSON per polling client-side
 // Endpoint utilizzato dai client per ottenere aggiornamenti in tempo reale sullo stato del ticket.
-// -----------------------------------------------------------------------------
+
 const express     = require('express');
 const ticketsRepo = require('../repositories/tickets.repo');
 
