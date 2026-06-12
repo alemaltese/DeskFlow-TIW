@@ -13,7 +13,6 @@ const authRouter       = require('./routes/auth');
 const ticketsRouter    = require('./routes/tickets');
 const operatoreRouter  = require('./routes/operatore');
 const adminRouter      = require('./routes/admin');
-const statsRouter      = require('./routes/stats');
 const apiRouter        = require('./routes/api');
 
 const app = express();
@@ -93,7 +92,6 @@ app.use('/', authRouter);
 app.use('/', ticketsRouter);
 app.use('/', operatoreRouter);
 app.use('/', adminRouter);
-app.use('/', statsRouter);
 app.use('/', apiRouter);
 
 // ── 404 ────────────────────────────────────────────────────────────────────

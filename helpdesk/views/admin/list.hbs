@@ -33,7 +33,14 @@
       {{/each}}
     </select>
     <input type="text" name="search" class="filter-input" placeholder="Cerca nel titolo..." value="{{activeFilters.search}}">
-    <button type="submit" class="btn btn-primary btn-sm">Filtra</button>
+    
+    <div style="display:flex; align-items:center; gap:0.5rem; border-left:1px solid #e2e8f0; padding-left:1rem; margin-left:0.5rem;">
+      <span style="font-size:0.875rem; color:#64748b;">Ordina:</span>
+      <button type="submit" name="sort" value="urgenza" class="btn btn-sm {{#ifEq activeFilters.sort 'urgenza'}}btn-primary{{else}}btn-secondary{{/ifEq}}">Urgenza</button>
+      <button type="submit" name="sort" value="tempo" class="btn btn-sm {{#ifEq activeFilters.sort 'tempo'}}btn-primary{{else}}btn-secondary{{/ifEq}}">Tempo</button>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-sm" style="margin-left:auto;">Filtra</button>
     <a href="/admin/tickets" class="btn btn-secondary btn-sm">Reset</a>
   </div>
 </form>
@@ -57,7 +64,7 @@
     <tbody>
       {{#each tickets}}
       <tr>
-        <td>{{this.id}}</td>
+        <td>#{{this.display_id}}</td>
         <td>{{this.title}}</td>
         <td>{{this.user_name}}</td>
         <td>{{#if this.operator_name}}{{this.operator_name}}{{else}}<span class="text-muted">—</span>{{/if}}</td>

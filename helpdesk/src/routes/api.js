@@ -1,12 +1,15 @@
 'use strict';
 
-// ── API JSON — consumata via fetch dal client ──────────────────────────────
+// API JSON per polling client-side
+// Endpoint utilizzato dai client per ottenere aggiornamenti in tempo reale sullo stato del ticket.
+// -----------------------------------------------------------------------------
 const express     = require('express');
 const ticketsRepo = require('../repositories/tickets.repo');
 
 const router = express.Router();
 
-// ── GET /api/tickets/:id/status ────────────────────────────────────────────
+// Restituisce lo stato attuale e la data di aggiornamento di un ticket specifico.
+// Controlla che l'utente loggato sia il reale proprietario del ticket prima di inviare i dati.
 router.get('/api/tickets/:id/status', function (req, res) {
   const id = parseInt(req.params.id, 10);
   if (isNaN(id)) return res.status(400).json({ error: 'invalid_id' });

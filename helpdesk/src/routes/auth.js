@@ -12,13 +12,15 @@ function homeFor(role) {
   return '/tickets';
 }
 
-// ── GET /login ────────────────────────────────────────────────────────────────
+// Gestisce la visualizzazione della pagina di accesso.
+// Se l'utente è già loggato, viene reindirizzato alla dashboard corrispondente al suo ruolo.
 router.get('/login', (req, res) => {
   if (res.locals.currentUser) return res.redirect(homeFor(res.locals.currentUser.role));
   res.render('auth/login', { title: 'Accedi' });
 });
 
-// ── POST /login ───────────────────────────────────────────────────────────────
+// Elabora il tentativo di accesso dell'utente.
+// Verifica le credenziali (email e password) e, in caso di successo, inizializza la sessione.
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -46,13 +48,15 @@ router.post('/login', async (req, res) => {
   res.redirect(returnTo || '/tickets');
 });
 
-// ── GET /register ─────────────────────────────────────────────────────────────
+// Mostra il modulo di registrazione per i nuovi utenti.
+// Anche qui, gli utenti già loggati vengono reindirizzati alla loro area personale.
 router.get('/register', (req, res) => {
   if (res.locals.currentUser) return res.redirect(homeFor(res.locals.currentUser.role));
   res.render('auth/register', { title: 'Registrati' });
 });
 
-// ── POST /register ────────────────────────────────────────────────────────────
+// Gestisce la creazione di un nuovo account utente.
+// Effettua la validazione dei dati, cripta la password e invia l'email di benvenuto.
 router.post('/register', async (req, res) => {
   const { name, email, password, confirm_password } = req.body;
   const errors = [];
@@ -86,7 +90,7 @@ router.post('/register', async (req, res) => {
   res.redirect('/tickets');
 });
 
-// ── GET /logout ───────────────────────────────────────────────────────────────
+// Termina la sessione dell'utente corrente e lo riporta alla pagina di login.
 router.get('/logout', (req, res) => {
   req.session.destroy(() => res.redirect('/login'));
 });

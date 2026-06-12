@@ -11,13 +11,20 @@ const router = express.Router();
 const CATEGORIES = ['tecnico', 'account', 'fatturazione', 'altro'];
 const PRIORITIES = ['bassa', 'media', 'alta', 'urgente'];
 
-// ── GET /tickets ──────────────────────────────────────────────────────────────
+// Visualizza l'elenco di tutti i ticket creati dall'utente corrente.
+// I ticket vengono recuperati e numerati progressivamente in base alla cronologia.
 router.get('/tickets', requireUtente, (req, res) => {
   const tickets = ticketRepo.findByUserId(res.locals.currentUser.id);
-  res.render('utente/list', { title: 'I miei ticket', tickets });
+  const total = tickets.length;
+  const mappedTickets = tickets.map((t, index) => ({
+    ...t,
+    userIndex: index + 1
+  }));
+  res.render('utente/list', { title: 'I miei ticket', tickets: mappedTickets });
 });
 
-// ── GET /tickets/new ──────────────────────────────────────────────────────────
+// Mostra il modulo per l'apertura di un nuovo ticket.
+// L'accesso è limitato ai soli utenti (operatori e admin non possono creare ticket).
 router.get('/tickets/new', requireUtente, (req, res) => {
   if (res.locals.currentUser.role !== 'utente') {
     req.setFlash('error', 'Solo gli utenti possono aprire ticket.');
@@ -30,7 +37,8 @@ router.get('/tickets/new', requireUtente, (req, res) => {
   });
 });
 
-// ── POST /tickets ─────────────────────────────────────────────────────────────
+// Gestisce la creazione di un nuovo ticket.
+// Verifica i campi inseriti, assegna automaticamente il ticket all'operatore più libero e invia la notifica via email.
 router.post('/tickets', requireUtente, (req, res) => {
   if (res.locals.currentUser.role !== 'utente') {
     req.setFlash('error', 'Solo gli utenti possono aprire ticket.');
@@ -67,7 +75,8 @@ router.post('/tickets', requireUtente, (req, res) => {
   res.redirect('/tickets');
 });
 
-// ── GET /tickets/:id ──────────────────────────────────────────────────────────
+// Visualizza i dettagli completi di un ticket specifico dell'utente.
+// Recupera le informazioni del ticket, i commenti scambiati, lo storico degli stati e l'eventuale valutazione.
 router.get('/tickets/:id', requireUtente, (req, res, next) => {
   const ticketId = parseInt(req.params.id, 10);
   if (isNaN(ticketId)) return next();
@@ -97,7 +106,8 @@ router.get('/tickets/:id', requireUtente, (req, res, next) => {
   });
 });
 
-// ── POST /tickets/:id/comments ────────────────────────────────────────────────
+// Aggiunge un nuovo commento al ticket.
+// Solo per i ticket aperti. Se assegnato a un operatore, invia una notifica email.
 router.post('/tickets/:id/comments', requireUtente, (req, res) => {
   const ticketId = parseInt(req.params.id, 10);
   const ticket   = ticketRepo.findById(ticketId);
@@ -128,7 +138,8 @@ router.post('/tickets/:id/comments', requireUtente, (req, res) => {
   res.redirect(`/tickets/${ticketId}`);
 });
 
-// ── POST /tickets/:id/chiudi ──────────────────────────────────────────────────
+// Chiude un ticket precedentemente "risolto".
+// Permette all'utente di aggiungere opzionalmente una valutazione (da 1 a 5 stelle) e una nota sul servizio ricevuto.
 router.post('/tickets/:id/chiudi', requireUtente, (req, res) => {
   const ticketId = parseInt(req.params.id, 10);
   const ticket   = ticketRepo.findById(ticketId);
@@ -151,7 +162,8 @@ router.post('/tickets/:id/chiudi', requireUtente, (req, res) => {
   res.redirect(`/tickets/${ticketId}`);
 });
 
-// ── POST /tickets/:id/riapri ──────────────────────────────────────────────────
+// Riapre un ticket che era stato chiuso se il problema si è ripresentato.
+// Riporta lo stato del ticket su "aperto".
 router.post('/tickets/:id/riapri', requireUtente, (req, res) => {
   const ticketId = parseInt(req.params.id, 10);
   const ticket   = ticketRepo.findById(ticketId);
@@ -171,7 +183,7 @@ router.post('/tickets/:id/riapri', requireUtente, (req, res) => {
   res.redirect(`/tickets/${ticketId}`);
 });
 
-// ── GET /profilo ──────────────────────────────────────────────────────────────
+// Mostra la pagina di gestione del profilo personale dell'utente.
 router.get('/profilo', requireUtente, (req, res) => {
   if (res.locals.currentUser.role !== 'utente') {
     return res.redirect(`/${res.locals.currentUser.role}/profilo`);
@@ -179,7 +191,8 @@ router.get('/profilo', requireUtente, (req, res) => {
   res.render('utente/profilo', { title: 'Il mio profilo', user: res.locals.currentUser });
 });
 
-// ── POST /profilo ─────────────────────────────────────────────────────────────
+// Salva le modifiche al profilo utente (nome, email, password).
+// Effettua la validazione dei campi e l'eventuale criptazione della nuova password.
 router.post('/profilo', requireUtente, async (req, res) => {
   if (res.locals.currentUser.role !== 'utente') {
     req.setFlash('error', 'Operazione non consentita.');

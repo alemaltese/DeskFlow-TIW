@@ -2,6 +2,10 @@
 'use strict';
 const db = require('../db/connection');
 
+// ============================================================================
+// Query di Lettura
+// ============================================================================
+// Preparazione degli statement SQL per recuperare dati base degli utenti.
 const findByEmailStmt              = db.prepare(`SELECT * FROM users WHERE email = ?`);
 const findIdByEmailStmt            = db.prepare(`SELECT id FROM users WHERE email = ?`);
 const findIdByEmailExcludingStmt   = db.prepare(`SELECT id FROM users WHERE email = ? AND id != ?`);

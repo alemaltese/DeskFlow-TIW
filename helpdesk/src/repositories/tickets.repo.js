@@ -11,8 +11,16 @@ const VALID_STATUS   = ['aperto', 'in_corso', 'risolto', 'chiuso'];
 const VALID_PRIORITY = ['bassa', 'media', 'alta', 'urgente'];
 const VALID_CATEGORY = ['tecnico', 'account', 'fatturazione', 'altro'];
 
-// ── Simple reads ─────────────────────────────────────────────────────────────
-const findByIdStmt = db.prepare(`SELECT * FROM tickets WHERE id = ?`);
+// Query di lettura di base
+// Recuperano dati primari dei ticket (singoli, per utente o dettagliati).
+const findByIdStmt = db.prepare(`SELECT * FROM v_tickets WHERE id = ?`);
+
+const getUserTicketIndexStmt = db.prepare(`
+  SELECT COUNT(*) AS idx
+  FROM tickets
+  WHERE user_id = (SELECT user_id FROM tickets WHERE id = ?)
+    AND created_at <= (SELECT created_at FROM tickets WHERE id = ?)
+`);
 
 const findByUserIdStmt = db.prepare(`
   SELECT * FROM tickets
@@ -22,7 +30,7 @@ const findByUserIdStmt = db.prepare(`
 
 const findDetailByIdStmt = db.prepare(`
   SELECT t.*, u.name AS user_name, op.name AS operator_name
-  FROM tickets t
+  FROM v_tickets t
   JOIN users u ON t.user_id = u.id
   LEFT JOIN users op ON t.assigned_to = op.id
   WHERE t.id = ?
@@ -30,13 +38,14 @@ const findDetailByIdStmt = db.prepare(`
 
 const findAdminDetailByIdStmt = db.prepare(`
   SELECT t.*, u.name AS user_name, u.email AS user_email, op.name AS operator_name
-  FROM tickets t
+  FROM v_tickets t
   JOIN users u ON u.id = t.user_id
   LEFT JOIN users op ON op.id = t.assigned_to
   WHERE t.id = ?
 `);
 
-// ── Comment & history reads ──────────────────────────────────────────────────
+// Query per Commenti e Storico
+// Recuperano i messaggi scambiati, gli eventi di cambio stato/priorità e le valutazioni finali.
 const getPublicCommentsStmt = db.prepare(`
   SELECT c.*, u.name AS author_name, u.role AS author_role
   FROM comments c
@@ -63,7 +72,8 @@ const getHistoryStmt = db.prepare(`
 
 const getRatingStmt = db.prepare(`SELECT * FROM ratings WHERE ticket_id = ?`);
 
-// ── Operator dashboard reads ─────────────────────────────────────────────────
+// Query per la Dashboard Operatore
+// Calcolano i KPI specifici per l'operatore (ticket assegnati, risolti nel mese, valutazione media).
 const getStatusCountsByOperatorStmt = db.prepare(`
   SELECT status, COUNT(*) AS n
   FROM tickets
@@ -73,10 +83,10 @@ const getStatusCountsByOperatorStmt = db.prepare(`
 
 const getActiveTicketsByOperatorStmt = db.prepare(`
   SELECT t.*, u.name AS user_name
-  FROM tickets t
+  FROM v_tickets t
   JOIN users u ON t.user_id = u.id
   WHERE t.assigned_to = ? AND t.status IN ('aperto', 'in_corso')
-  ORDER BY ${PRIORITY_ORDER} DESC, t.created_at ASC
+  ORDER BY t.created_at DESC
 `);
 
 const getResolvedThisMonthStmt = db.prepare(`
@@ -93,7 +103,8 @@ const getAvgRatingByOperatorStmt = db.prepare(`
   WHERE t.assigned_to = ?
 `);
 
-// ── Admin dashboard reads ────────────────────────────────────────────────────
+// Query per la Dashboard Amministratore
+// Forniscono panoramiche globali (conteggi totali, ticket non assegnati, carichi di lavoro).
 const getTicketCountsAdminStmt = db.prepare(`
   SELECT
     COUNT(*) AS total,
@@ -105,12 +116,12 @@ const getTicketCountsAdminStmt = db.prepare(`
 `);
 
 const getUnassignedTicketsStmt = db.prepare(`
-  SELECT t.id, t.title, t.category, t.priority, t.status, t.created_at,
+  SELECT t.id, t.display_id, t.title, t.category, t.priority, t.status, t.created_at,
          u.name AS user_name
-  FROM tickets t
+  FROM v_tickets t
   JOIN users u ON u.id = t.user_id
   WHERE t.assigned_to IS NULL AND t.status NOT IN ('risolto', 'chiuso')
-  ORDER BY ${PRIORITY_ORDER} DESC, t.created_at ASC
+  ORDER BY t.created_at DESC
   LIMIT 10
 `);
 
@@ -125,16 +136,17 @@ const getOperatorWorkloadStmt = db.prepare(`
 `);
 
 const getRecentTicketsStmt = db.prepare(`
-  SELECT t.id, t.title, t.category, t.priority, t.status, t.created_at,
+  SELECT t.id, t.display_id, t.title, t.category, t.priority, t.status, t.created_at,
          u.name AS user_name, op.name AS operator_name
-  FROM tickets t
+  FROM v_tickets t
   JOIN users u ON u.id = t.user_id
   LEFT JOIN users op ON op.id = t.assigned_to
   ORDER BY t.created_at DESC
   LIMIT 5
 `);
 
-// ── Write statements ─────────────────────────────────────────────────────────
+// Statement di Scrittura
+// Query base per inserimento e aggiornamento dei record nel database.
 const insertTicketStmt = db.prepare(`
   INSERT INTO tickets (user_id, title, description, category, priority, status, assigned_to)
   VALUES (?, ?, ?, ?, ?, 'aperto', ?)
@@ -160,13 +172,16 @@ const insertRatingStmt = db.prepare(`
   VALUES (?, ?, ?, ?)
 `);
 
+const deleteRatingStmt = db.prepare(`DELETE FROM ratings WHERE ticket_id = ?`);
+
 const updateStatusWithTsStmt  = db.prepare(`UPDATE tickets SET status = ?, updated_at = ? WHERE id = ?`);
 const updateStatusCurTsStmt   = db.prepare(`UPDATE tickets SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`);
 const updateAssignedToStmt    = db.prepare(`UPDATE tickets SET assigned_to = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`);
 const updatePriorityWithTsStmt = db.prepare(`UPDATE tickets SET priority = ?, updated_at = ? WHERE id = ?`);
 const updatePriorityCurTsStmt  = db.prepare(`UPDATE tickets SET priority = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`);
 
-// ── Transactions ─────────────────────────────────────────────────────────────
+// Transazioni di Scrittura
+// Raggruppano in un'unica operazione (Atomica) le modifiche al ticket e il relativo aggiornamento dello storico.
 const createTicketTx = db.transaction((userId, title, description, category, priority, assignedTo) => {
   const result = insertTicketStmt.run(userId, title, description, category, priority, assignedTo);
   insertHistoryStmt.run(result.lastInsertRowid, userId, 'status', '', 'aperto');
@@ -184,6 +199,7 @@ const closeTicketTx = db.transaction((ticketId, userId, now, score, note) => {
 const reopenTicketTx = db.transaction((ticketId, userId, now) => {
   updateStatusWithTsStmt.run('aperto', now, ticketId);
   insertHistoryWithTsStmt.run(ticketId, userId, 'status', 'chiuso', 'aperto', now);
+  deleteRatingStmt.run(ticketId);
 });
 
 const updateTicketStatusTx = db.transaction((ticketId, userId, oldStatus, newStatus, now) => {
@@ -215,8 +231,13 @@ const assignTicketTx = db.transaction((ticketId, userId, newOpId, oldOpName, new
   }
 });
 
-// ── Read functions ───────────────────────────────────────────────────────────
+// Wrapper Funzioni di Lettura
+// Esportano l'esecuzione degli Statement preparati per l'uso nei controller.
 function findById(id)                { return findByIdStmt.get(id); }
+function getUserTicketIndex(id)      { 
+  const res = getUserTicketIndexStmt.get(id, id);
+  return res ? res.idx : id;
+}
 function findByUserId(userId)        { return findByUserIdStmt.all(userId); }
 function findDetailById(id)          { return findDetailByIdStmt.get(id); }
 function findAdminDetailById(id)     { return findAdminDetailByIdStmt.get(id); }
@@ -235,7 +256,7 @@ function getOperatorWorkload()           { return getOperatorWorkloadStmt.all();
 function getRecentTickets()              { return getRecentTicketsStmt.all(); }
 
 // NOTE: dynamic query — prepared at call time because WHERE clause varies per request
-function filterOperatorTickets(operatorId, { status, priority, category, search } = {}) {
+function filterOperatorTickets(operatorId, { status, priority, category, search, sort } = {}) {
   const conditions = ['t.assigned_to = ?'];
   const params     = [operatorId];
 
@@ -250,15 +271,15 @@ function filterOperatorTickets(operatorId, { status, priority, category, search 
 
   return db.prepare(`
     SELECT t.*, u.name AS user_name
-    FROM tickets t
+    FROM v_tickets t
     JOIN users u ON t.user_id = u.id
     WHERE ${conditions.join(' AND ')}
-    ORDER BY ${PRIORITY_ORDER} DESC, t.created_at DESC
+    ORDER BY ${sort === 'tempo' ? 't.created_at DESC' : `${PRIORITY_ORDER} DESC, t.created_at DESC`}
   `).all(...params);
 }
 
 // NOTE: dynamic query — prepared at call time because WHERE clause varies per request
-function filterAdminTickets({ status, priority, category, assigned_to, search } = {}) {
+function filterAdminTickets({ status, priority, category, assigned_to, search, sort } = {}) {
   const conditions = [];
   const params     = [];
 
@@ -278,18 +299,18 @@ function filterAdminTickets({ status, priority, category, assigned_to, search } 
 
   const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
   return db.prepare(`
-    SELECT t.id, t.title, t.category, t.priority, t.status, t.created_at,
+    SELECT t.id, t.display_id, t.title, t.category, t.priority, t.status, t.created_at,
            u.name AS user_name, op.name AS operator_name
-    FROM tickets t
+    FROM v_tickets t
     JOIN users u ON u.id = t.user_id
     LEFT JOIN users op ON op.id = t.assigned_to
     ${where}
-    ORDER BY CASE t.priority WHEN 'urgente' THEN 4 WHEN 'alta' THEN 3 WHEN 'media' THEN 2 ELSE 1 END DESC,
-             t.created_at DESC
+    ORDER BY ${sort === 'tempo' ? 't.created_at DESC' : `${PRIORITY_ORDER} DESC, t.created_at DESC`}
   `).all(...params);
 }
 
-// ── Write functions ──────────────────────────────────────────────────────────
+// Wrapper Funzioni di Scrittura
+// Espongono le transazioni in modo che siano utilizzabili esternamente dai controller.
 function createTicket(userId, title, description, category, priority, assignedTo) {
   return createTicketTx(userId, title, description, category, priority, assignedTo);
 }
@@ -320,6 +341,7 @@ function updateAdminPriority(ticketId, userId, oldPriority, newPriority) {
 
 module.exports = {
   findById,
+  getUserTicketIndex,
   findByUserId,
   findDetailById,
   findAdminDetailById,

@@ -28,7 +28,7 @@
         <tbody>
           {{#each unassigned}}
           <tr>
-            <td>{{this.id}}</td>
+            <td>#{{this.display_id}}</td>
             <td>{{this.title}}</td>
             <td>{{this.user_name}}</td>
             <td><span class="badge badge-{{this.priority}}">{{capitalize this.priority}}</span></td>
@@ -63,7 +63,7 @@
         <tbody>
           {{#each recentTickets}}
           <tr>
-            <td><a href="/admin/tickets/{{this.id}}">#{{this.id}}</a></td>
+            <td><a href="/admin/tickets/{{this.id}}">#{{this.display_id}}</a></td>
             <td>{{this.title}}</td>
             <td>{{this.user_name}}</td>
             <td>{{#if this.operator_name}}{{this.operator_name}}{{else}}<span class="text-muted">—</span>{{/if}}</td>
@@ -101,8 +101,6 @@
         <h3>Azioni rapide</h3>
         <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:0.5rem;">
           <a href="/admin/tickets" class="btn btn-secondary">Tutti i ticket</a>
-          <a href="/admin/utenti" class="btn btn-secondary">Gestione utenti</a>
-          <a href="/admin/utenti/nuovo" class="btn btn-primary">Nuovo utente</a>
         </div>
       </div>
     </div>

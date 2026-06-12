@@ -28,7 +28,7 @@
         <h3>Informazioni</h3>
         <table style="margin-top:0.5rem;">
           <tbody>
-            <tr><td style="color:#64748b;">ID</td><td>#{{ticket.id}}</td></tr>
+            <tr><td style="color:#64748b;">ID</td><td>#{{ticket.display_id}}</td></tr>
             <tr><td style="color:#64748b;">Utente</td><td>{{ticket.user_name}}</td></tr>
             <tr><td style="color:#64748b;">Email</td><td>{{ticket.user_email}}</td></tr>
             <tr><td style="color:#64748b;">Categoria</td><td>{{capitalize ticket.category}}</td></tr>
@@ -40,6 +40,7 @@
 
       <div class="card" style="margin-top:1rem;">
         <h3>Stato</h3>
+        {{#unless isClosed}}
         <form action="/admin/tickets/{{ticket.id}}/status" method="POST" style="margin-top:0.5rem;">
           <select name="status" style="width:100%; margin-bottom:0.5rem;">
             {{#each STATUSES}}
@@ -48,6 +49,9 @@
           </select>
           <button type="submit" class="btn btn-primary btn-sm" style="width:100%;">Aggiorna stato</button>
         </form>
+        {{else}}
+        <div style="margin-top:0.5rem;"><span style="font-size:13px;color:#94a3b8;">Stato non modificabile (ticket chiuso)</span></div>
+        {{/unless}}
       </div>
 
       <div class="card" style="margin-top:1rem;">
@@ -68,6 +72,7 @@
 
       <div class="card" style="margin-top:1rem;">
         <h3>Assegnazione</h3>
+        {{#unless isClosed}}
         <form action="/admin/tickets/{{ticket.id}}/assegna" method="POST" style="margin-top:0.5rem;">
           <select name="operator_id" style="width:100%; margin-bottom:0.5rem;">
             <option value="">— Non assegnato —</option>
@@ -81,6 +86,9 @@
           <button type="submit" class="btn btn-secondary btn-sm">⚡ Auto-assegna</button>
           <span style="font-size:11px;color:#94a3b8;margin-left:6px;">Assegna all'operatore con meno ticket attivi</span>
         </form>
+        {{else}}
+        <div style="margin-top:0.5rem;"><span style="font-size:13px;color:#94a3b8;">Assegnazione non modificabile (ticket chiuso)</span></div>
+        {{/unless}}
       </div>
 
       {{#if rating}}
@@ -113,12 +121,13 @@
           {{#if this.is_internal}}<span class="badge" style="background:#fef3c7; color:#92400e; font-size:0.7rem;">Nota interna</span>{{/if}}
           <span style="color:#94a3b8; font-size:0.8rem; margin-left:auto;">{{formatDate this.created_at}}</span>
         </div>
-        <div class="comment-body">{{this.body}}</div>
+        <div class="comment-body">{{this.content}}</div>
       </div>
       {{else}}
       <p class="text-muted" style="margin-top:0.75rem;">Nessun commento.</p>
       {{/each}}
 
+      {{#unless isClosed}}
       <form action="/admin/tickets/{{ticket.id}}/commenti" method="POST" style="margin-top:1.5rem;">
         <div class="form-group">
           <label for="body">Aggiungi commento</label>
@@ -132,6 +141,11 @@
           <button type="submit" class="btn btn-primary btn-sm">Invia</button>
         </div>
       </form>
+      {{else}}
+      <div style="margin-top:1.5rem; padding:1rem; background:#f8fafc; border-radius:0.5rem; text-align:center;">
+        <span class="text-muted">Il ticket è chiuso, non è possibile inviare nuovi messaggi.</span>
+      </div>
+      {{/unless}}
     </div>
 
     <div class="card" style="margin-top:1.5rem;">

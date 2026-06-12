@@ -10,7 +10,8 @@ const router = express.Router();
 
 const VALID_PRIORITY = ['bassa', 'media', 'alta', 'urgente'];
 
-// ── GET /operatore/dashboard ──────────────────────────────────────────────────
+// Visualizza la Dashboard dell'Operatore con i suoi KPI e riepiloghi.
+// Mostra il numero di ticket per stato, i ticket attualmente attivi, e le medie di valutazione.
 router.get('/operatore/dashboard', requireOperatore, (req, res) => {
   const opId = res.locals.currentUser.id;
 
@@ -33,21 +34,24 @@ router.get('/operatore/dashboard', requireOperatore, (req, res) => {
   });
 });
 
-// ── GET /operatore/tickets ────────────────────────────────────────────────────
+// Elenca tutti i ticket assegnati all'operatore corrente.
+// Permette di filtrare i risultati per stato, priorità, categoria e ricerca testuale.
 router.get('/operatore/tickets', requireOperatore, (req, res) => {
-  const { status, priority, category, search } = req.query;
+  const { status, priority, category, search, sort } = req.query;
 
-  const tickets = ticketRepo.filterOperatorTickets(res.locals.currentUser.id, { status, priority, category, search });
+  const filters = { status, priority, category, search, sort: sort || 'urgenza' };
+  const tickets = ticketRepo.filterOperatorTickets(res.locals.currentUser.id, filters);
 
   res.render('operatore/list', {
     title: 'I miei ticket',
     tickets,
-    filters: { status: status || '', priority: priority || '', category: category || '', search: search || '' },
+    filters,
     hasFilters: !!(status || priority || category || search),
   });
 });
 
-// ── GET /operatore/tickets/:id ────────────────────────────────────────────────
+// Mostra il dettaglio di un ticket specifico assegnato all'operatore.
+// Include tutti i messaggi, la cronologia degli stati e le eventuali valutazioni ricevute dall'utente.
 router.get('/operatore/tickets/:id', requireOperatore, (req, res, next) => {
   const ticketId = parseInt(req.params.id, 10);
   if (isNaN(ticketId)) return next();
@@ -73,10 +77,13 @@ router.get('/operatore/tickets/:id', requireOperatore, (req, res, next) => {
     title: ticket.title,
     ticket, comments, history, rating,
     canEditPriority: !['risolto', 'chiuso'].includes(ticket.status),
+    canEditStatus: ticket.status !== 'chiuso',
+    isClosed: ticket.status === 'chiuso',
   });
 });
 
-// ── POST /operatore/tickets/:id/status ────────────────────────────────────────
+// Aggiorna lo stato di avanzamento del ticket (es. "in_corso", "risolto").
+// Registra l'evento nello storico e notifica l'utente via email.
 router.post('/operatore/tickets/:id/status', requireOperatore, (req, res) => {
   const ticketId = parseInt(req.params.id, 10);
   const ticket   = ticketRepo.findById(ticketId);
@@ -84,6 +91,11 @@ router.post('/operatore/tickets/:id/status', requireOperatore, (req, res) => {
   if (!ticket || ticket.assigned_to !== res.locals.currentUser.id) {
     req.setFlash('error', 'Operazione non consentita.');
     return res.redirect('/operatore/tickets');
+  }
+
+  if (ticket.status === 'chiuso') {
+    req.setFlash('error', 'Non puoi modificare lo stato di un ticket chiuso. Solo l\'utente può riaprirlo.');
+    return res.redirect(`/operatore/tickets/${ticketId}`);
   }
 
   const { new_status } = req.body;
@@ -107,7 +119,8 @@ router.post('/operatore/tickets/:id/status', requireOperatore, (req, res) => {
   res.redirect(`/operatore/tickets/${ticketId}`);
 });
 
-// ── POST /operatore/tickets/:id/priority ──────────────────────────────────────
+// Permette all'operatore di modificare la priorità del ticket assegnato.
+// La priorità non può essere cambiata se il ticket è già stato risolto o chiuso.
 router.post('/operatore/tickets/:id/priority', requireOperatore, (req, res) => {
   const ticketId = parseInt(req.params.id, 10);
   const ticket   = ticketRepo.findById(ticketId);
@@ -137,7 +150,8 @@ router.post('/operatore/tickets/:id/priority', requireOperatore, (req, res) => {
   res.redirect(`/operatore/tickets/${ticketId}`);
 });
 
-// ── POST /operatore/tickets/:id/comments ──────────────────────────────────────
+// Aggiunge un nuovo commento al ticket.
+// L'operatore può scegliere se inserire una "Nota interna" (visibile solo allo staff) o rispondere al cliente (pubblico).
 router.post('/operatore/tickets/:id/comments', requireOperatore, (req, res) => {
   const ticketId = parseInt(req.params.id, 10);
   const ticket   = ticketRepo.findById(ticketId);
@@ -145,6 +159,11 @@ router.post('/operatore/tickets/:id/comments', requireOperatore, (req, res) => {
   if (!ticket || ticket.assigned_to !== res.locals.currentUser.id) {
     req.setFlash('error', 'Operazione non consentita.');
     return res.redirect('/operatore/tickets');
+  }
+
+  if (ticket.status === 'chiuso') {
+    req.setFlash('error', 'Il ticket è chiuso, non è possibile aggiungere commenti.');
+    return res.redirect(`/operatore/tickets/${ticketId}`);
   }
 
   const { content, is_internal: isInternalStr } = req.body;
@@ -165,12 +184,12 @@ router.post('/operatore/tickets/:id/comments', requireOperatore, (req, res) => {
   res.redirect(`/operatore/tickets/${ticketId}`);
 });
 
-// ── GET /operatore/profilo ────────────────────────────────────────────────────
+// Mostra la pagina di gestione del profilo personale dell'operatore.
 router.get('/operatore/profilo', requireOperatore, (req, res) => {
   res.render('operatore/profilo', { title: 'Il mio profilo', user: res.locals.currentUser });
 });
 
-// ── POST /operatore/profilo ───────────────────────────────────────────────────
+// Salva le modifiche al profilo dell'operatore (nome, email, password).
 router.post('/operatore/profilo', requireOperatore, async (req, res) => {
   const { name, email, old_password, new_password, confirm_password } = req.body;
 

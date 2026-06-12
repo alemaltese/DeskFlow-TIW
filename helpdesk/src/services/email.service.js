@@ -22,52 +22,121 @@ async function send(to, subject, text, html) {
   }
 }
 
+function wrapHtml(title, content) {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f3f4f6; margin: 0; padding: 20px; }
+    .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+    .header { background-color: #2563eb; color: #ffffff; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: -0.5px; }
+    .content { padding: 30px; line-height: 1.6; font-size: 16px; color: #374151; }
+    .content h2 { margin-top: 0; color: #111827; font-size: 20px; margin-bottom: 20px; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; }
+    .content p { margin-top: 0; margin-bottom: 16px; }
+    .footer { background-color: #f9fafb; color: #6b7280; text-align: center; padding: 20px; font-size: 13px; border-top: 1px solid #e5e7eb; }
+    .highlight { background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 4px; margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">DeskFlow</div>
+    <div class="content">
+      <h2>${title}</h2>
+      ${content}
+    </div>
+    <div class="footer">
+      Questo è un messaggio generato automaticamente.<br>Si prega di non rispondere a questa email.
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
+const ticketRepo = require('../repositories/tickets.repo');
+
 // ── sendWelcomeEmail ───────────────────────────────────────────────────────
 async function sendWelcomeEmail(userEmail, userName, tempPassword = null) {
   const subject = 'Benvenuto su DeskFlow';
-  const pwLine  = tempPassword ? `\nLa tua password temporanea: ${tempPassword}` : '';
-  const text    = `Ciao ${userName},\n\nIl tuo account DeskFlow è stato creato con successo.${pwLine}\n\nBuon lavoro!`;
-  const html    = `<p>Ciao <strong>${userName}</strong>,</p><p>Il tuo account DeskFlow è stato creato con successo.${tempPassword ? `<br>Password temporanea: <strong>${tempPassword}</strong>` : ''}</p>`;
-  await send(userEmail, subject, text, html);
+  const text    = `Ciao ${userName},\n\nIl tuo account DeskFlow è stato creato con successo.${tempPassword ? `\nLa tua password temporanea: ${tempPassword}` : ''}\n\nBuon lavoro!`;
+  
+  let content = `<p>Ciao <strong>${userName}</strong>,</p>
+                 <p>Siamo felici di darti il benvenuto! Il tuo account DeskFlow è stato creato con successo e ora puoi accedere alla piattaforma per inviare o gestire le tue richieste di assistenza.</p>`;
+  if (tempPassword) {
+    content += `<div class="highlight"><strong>Password temporanea:</strong> ${tempPassword}</div>
+                <p>Ti consigliamo di cambiare la password al tuo primo accesso tramite il tuo profilo.</p>`;
+  }
+  
+  await send(userEmail, subject, text, wrapHtml('Benvenuto a bordo!', content));
 }
 
 // ── sendTicketCreatedEmail ─────────────────────────────────────────────────
 async function sendTicketCreatedEmail(userEmail, ticketId, title) {
-  const subject = `Ticket #${ticketId} aperto`;
-  const text    = `Il tuo ticket "#${ticketId} - ${title}" è stato aperto con successo. Ti aggiorneremo sullo stato.`;
-  const html    = `<p>Il tuo ticket <strong>#${ticketId} — ${title}</strong> è stato aperto con successo.</p><p>Ti aggiorneremo non appena ci saranno novità.</p>`;
-  await send(userEmail, subject, text, html);
+  const userIndex = ticketRepo.getUserTicketIndex(ticketId);
+  const subject = `Ticket #${userIndex} aperto con successo`;
+  const text    = `Il tuo ticket "#${userIndex} - ${title}" è stato aperto con successo. Ti aggiorneremo sullo stato.`;
+  
+  const content = `<p>Abbiamo ricevuto la tua richiesta di assistenza.</p>
+                   <div class="highlight"><strong>Ticket #${userIndex}</strong>: ${title}</div>
+                   <p>Il nostro team se ne prenderà carico al più presto. Ti invieremo un'ulteriore notifica non appena ci saranno aggiornamenti, oppure se un operatore ti assegnerà il ticket.</p>`;
+                   
+  await send(userEmail, subject, text, wrapHtml(`Conferma apertura ticket #${userIndex}`, content));
 }
 
 // ── sendTicketAssignedEmail ────────────────────────────────────────────────
 async function sendTicketAssignedEmail(recipientEmail, ticketId, title, isToUser = false) {
+  const displayId = isToUser ? ticketRepo.getUserTicketIndex(ticketId) : ticketId;
   const subject = isToUser
-    ? `Il tuo ticket #${ticketId} è stato assegnato`
-    : `Ticket #${ticketId} assegnato a te`;
+    ? `Il tuo ticket #${displayId} è in lavorazione`
+    : `Nuovo Ticket #${displayId} assegnato a te`;
+    
   const body = isToUser
-    ? `Il tuo ticket "${title}" è stato assegnato a un operatore. Riceverai presto assistenza.`
-    : `Ti è stato assegnato il ticket #${ticketId}: "${title}". Accedi alla dashboard per gestirlo.`;
-  await send(recipientEmail, subject, body, `<p>${body}</p>`);
+    ? `Il tuo ticket "${title}" è stato appena assegnato a uno dei nostri operatori. Riceverai presto assistenza.`
+    : `Ti è stato assegnato il ticket #${displayId}: "${title}". Accedi alla dashboard per gestirlo.`;
+    
+  const content = `<p>${body}</p>
+                   <p>Puoi accedere in qualsiasi momento alla piattaforma per controllare i dettagli del ticket e rispondere con ulteriori informazioni.</p>`;
+                   
+  const headerTitle = isToUser ? `Ticket #${displayId} in gestione` : `Nuova Assegnazione: Ticket #${displayId}`;
+  await send(recipientEmail, subject, body, wrapHtml(headerTitle, content));
 }
 
 // ── sendStatusChangedEmail ─────────────────────────────────────────────────
 async function sendStatusChangedEmail(userEmail, ticketId, oldStatus, newStatus) {
-  const subject  = `Ticket #${ticketId} — stato aggiornato`;
+  const userIndex = ticketRepo.getUserTicketIndex(ticketId);
+  const subject  = `Aggiornamento stato: Ticket #${userIndex}`;
   const rateNote = newStatus === 'risolto' ? '\n\nPuoi lasciare una valutazione accedendo al tuo ticket.' : '';
-  const text     = `Lo stato del ticket #${ticketId} è cambiato da "${oldStatus}" a "${newStatus}".${rateNote}`;
-  const html     = `<p>Lo stato del ticket <strong>#${ticketId}</strong> è cambiato da <em>${oldStatus}</em> a <strong>${newStatus}</strong>.${newStatus === 'risolto' ? '<br>Puoi lasciare una valutazione accedendo al tuo ticket.' : ''}</p>`;
-  await send(userEmail, subject, text, html);
+  const text     = `Lo stato del ticket #${userIndex} è cambiato da "${oldStatus}" a "${newStatus}".${rateNote}`;
+  
+  let content = `<p>Ci sono novità! Lo stato del tuo ticket <strong>#${userIndex}</strong> è stato aggiornato.</p>
+                 <div class="highlight">
+                   Stato precedente: <em>${oldStatus.toUpperCase()}</em><br>
+                   Nuovo stato: <strong>${newStatus.toUpperCase()}</strong>
+                 </div>`;
+                 
+  if (newStatus === 'risolto') {
+    content += `<p>Il problema sembra essere stato risolto. Ti invitiamo ad accedere alla piattaforma per confermare la chiusura del ticket e, se lo desideri, lasciarci una valutazione sul supporto ricevuto!</p>`;
+  }
+  
+  await send(userEmail, subject, text, wrapHtml(`Aggiornamento Ticket #${userIndex}`, content));
 }
 
-// ── sendNewCommentEmail ────────────────────────────────────────────────────
 async function sendNewCommentEmail(recipientEmail, ticketId, authorName, isToOperatore = false) {
+  const displayId = isToOperatore ? ticketId : ticketRepo.getUserTicketIndex(ticketId);
   const subject = isToOperatore
-    ? `Nuovo messaggio sul ticket #${ticketId}`
-    : `Risposta al tuo ticket #${ticketId}`;
+    ? `Nuovo messaggio per il ticket #${displayId}`
+    : `Risposta al tuo ticket #${displayId}`;
+    
   const body = isToOperatore
-    ? `L'utente ha aggiunto un nuovo messaggio al ticket #${ticketId}. Accedi alla dashboard per rispondere.`
-    : `${authorName} ha risposto al tuo ticket #${ticketId}. Accedi a DeskFlow per leggere la risposta.`;
-  await send(recipientEmail, subject, body, `<p>${body}</p>`);
+    ? `L'utente ha aggiunto un nuovo messaggio al ticket #${displayId}. Accedi alla dashboard per rispondere.`
+    : `<strong>${authorName}</strong> ha appena inserito una risposta al tuo ticket #${displayId}.`;
+    
+  const content = `<p>${body}</p>
+                   <p>Accedi alla piattaforma DeskFlow per leggere il messaggio completo e continuare la conversazione in maniera rapida e sicura.</p>`;
+                   
+  const headerTitle = isToOperatore ? `Aggiornamento Ticket #${displayId}` : `Nuova risposta al Ticket #${displayId}`;
+  await send(recipientEmail, subject, body, wrapHtml(headerTitle, content));
 }
 
 module.exports = {

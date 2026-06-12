@@ -1,46 +1,39 @@
-{{!-- ── Barra filtri ── --}}
-<form method="GET" action="/operatore/tickets" class="filter-bar card">
-  <div class="filter-group">
-    <label for="f-status">Stato</label>
-    <select id="f-status" name="status">
-      <option value="">Tutti</option>
-      <option value="aperto"   {{#if (eq filters.status 'aperto')}}selected{{/if}}>Aperto</option>
+<form class="filters-bar" method="GET" action="/operatore/tickets" style="margin-bottom:1.5rem;">
+  <div class="filters-row">
+    <select name="status" class="filter-select">
+      <option value="">Tutti gli stati</option>
+      <option value="aperto" {{#if (eq filters.status 'aperto')}}selected{{/if}}>Aperto</option>
       <option value="in_corso" {{#if (eq filters.status 'in_corso')}}selected{{/if}}>In corso</option>
-      <option value="risolto"  {{#if (eq filters.status 'risolto')}}selected{{/if}}>Risolto</option>
-      <option value="chiuso"   {{#if (eq filters.status 'chiuso')}}selected{{/if}}>Chiuso</option>
+      <option value="risolto" {{#if (eq filters.status 'risolto')}}selected{{/if}}>Risolto</option>
+      <option value="chiuso" {{#if (eq filters.status 'chiuso')}}selected{{/if}}>Chiuso</option>
     </select>
-  </div>
-
-  <div class="filter-group">
-    <label for="f-priority">Priorità</label>
-    <select id="f-priority" name="priority">
-      <option value="">Tutte</option>
+    
+    <select name="priority" class="filter-select">
+      <option value="">Tutte le priorità</option>
+      <option value="bassa" {{#if (eq filters.priority 'bassa')}}selected{{/if}}>Bassa</option>
+      <option value="media" {{#if (eq filters.priority 'media')}}selected{{/if}}>Media</option>
+      <option value="alta" {{#if (eq filters.priority 'alta')}}selected{{/if}}>Alta</option>
       <option value="urgente" {{#if (eq filters.priority 'urgente')}}selected{{/if}}>Urgente</option>
-      <option value="alta"    {{#if (eq filters.priority 'alta')}}selected{{/if}}>Alta</option>
-      <option value="media"   {{#if (eq filters.priority 'media')}}selected{{/if}}>Media</option>
-      <option value="bassa"   {{#if (eq filters.priority 'bassa')}}selected{{/if}}>Bassa</option>
     </select>
-  </div>
-
-  <div class="filter-group">
-    <label for="f-category">Categoria</label>
-    <select id="f-category" name="category">
-      <option value="">Tutte</option>
-      <option value="tecnico"      {{#if (eq filters.category 'tecnico')}}selected{{/if}}>Tecnico</option>
-      <option value="account"      {{#if (eq filters.category 'account')}}selected{{/if}}>Account</option>
+    
+    <select name="category" class="filter-select">
+      <option value="">Tutte le categorie</option>
+      <option value="tecnico" {{#if (eq filters.category 'tecnico')}}selected{{/if}}>Tecnico</option>
+      <option value="account" {{#if (eq filters.category 'account')}}selected{{/if}}>Account</option>
       <option value="fatturazione" {{#if (eq filters.category 'fatturazione')}}selected{{/if}}>Fatturazione</option>
-      <option value="altro"        {{#if (eq filters.category 'altro')}}selected{{/if}}>Altro</option>
+      <option value="altro" {{#if (eq filters.category 'altro')}}selected{{/if}}>Altro</option>
     </select>
-  </div>
+    
+    <input type="text" name="search" class="filter-input" placeholder="Cerca nel titolo o descrizione..." value="{{filters.search}}">
+    
+    <div style="display:flex; align-items:center; gap:0.5rem; border-left:1px solid #e2e8f0; padding-left:1rem; margin-left:0.5rem;">
+      <span style="font-size:0.875rem; color:#64748b;">Ordina:</span>
+      <button type="submit" name="sort" value="urgenza" class="btn btn-sm {{#if (eq filters.sort 'urgenza')}}btn-primary{{else}}btn-secondary{{/if}}">Urgenza</button>
+      <button type="submit" name="sort" value="tempo" class="btn btn-sm {{#if (eq filters.sort 'tempo')}}btn-primary{{else}}btn-secondary{{/if}}">Tempo</button>
+    </div>
 
-  <div class="filter-group" style="flex:1; min-width:180px;">
-    <label for="f-search">Cerca</label>
-    <input type="text" id="f-search" name="search" value="{{filters.search}}" placeholder="Titolo o descrizione…">
-  </div>
-
-  <div class="filter-actions">
-    <button type="submit" class="btn btn-primary btn-sm">Filtra</button>
-    <a href="/operatore/tickets" class="btn btn-secondary btn-sm">Reimposta</a>
+    <button type="submit" class="btn btn-primary btn-sm" style="margin-left:auto;">Filtra</button>
+    <a href="/operatore/tickets" class="btn btn-secondary btn-sm">Reset</a>
   </div>
 </form>
 
@@ -71,7 +64,7 @@
     <tbody>
       {{#each tickets}}
       <tr>
-        <td class="text-muted">{{this.id}}</td>
+        <td class="text-muted">#{{this.display_id}}</td>
         <td><a href="/operatore/tickets/{{this.id}}">{{this.title}}</a></td>
         <td>{{this.user_name}}</td>
         <td>{{capitalize this.category}}</td>

@@ -87,6 +87,7 @@
       {{/if}}
 
       {{!-- Form nuovo messaggio --}}
+      {{#unless isClosed}}
       <form action="/operatore/tickets/{{ticket.id}}/comments" method="POST" style="margin-top:1.5rem;">
         <label for="content">Scrivi una risposta</label>
         <textarea
@@ -105,6 +106,11 @@
           <button type="submit" class="btn btn-primary btn-sm" style="margin-left:auto;">Invia</button>
         </div>
       </form>
+      {{else}}
+      <div style="margin-top:1.5rem; padding:1rem; background:#f8fafc; border-radius:0.5rem; text-align:center;">
+        <span class="text-muted">Il ticket è chiuso, non è possibile inviare nuovi messaggi.</span>
+      </div>
+      {{/unless}}
     </div>
 
   </div>{{!-- /col-main --}}
@@ -115,6 +121,7 @@
     {{!-- Cambio stato --}}
     <div class="card sidebar-sticky">
       <h3 style="margin-bottom:1rem;">Aggiorna stato</h3>
+      {{#if canEditStatus}}
       <form action="/operatore/tickets/{{ticket.id}}/status" method="POST">
         <select name="new_status" style="margin-bottom:0.75rem;">
           <option value="in_corso" {{#if (eq ticket.status 'in_corso')}}selected{{/if}}>In corso</option>
@@ -122,6 +129,9 @@
         </select>
         <button type="submit" class="btn btn-primary btn-sm" style="width:100%;">Aggiorna stato</button>
       </form>
+      {{else}}
+      <span style="font-size:13px;color:#94a3b8;">Stato non modificabile (ticket {{ticket.status}})</span>
+      {{/if}}
 
       <hr style="border:none; border-top:1px solid #f1f5f9; margin:1.25rem 0;">
 

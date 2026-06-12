@@ -13,37 +13,40 @@ const CATEGORIES = ['tecnico', 'account', 'fatturazione', 'altro'];
 const PRIORITIES = ['bassa', 'media', 'alta', 'urgente'];
 const STATUSES   = ['aperto', 'in_corso', 'risolto', 'chiuso'];
 
-// ── Dashboard ─────────────────────────────────────────────────────────────────
+// Raccoglie e mostra i dati statistici principali sulla Dashboard dell'Amministratore.
+// Mostra il numero totale dei ticket, i ticket non assegnati e il carico di lavoro degli operatori.
 router.get('/admin/dashboard', (req, res) => {
   const counts        = ticketRepo.getTicketCountsAdmin();
-  const userCounts    = userRepo.getUserCounts();
   const unassigned    = ticketRepo.getUnassignedTickets();
   const workload      = ticketRepo.getOperatorWorkload();
   const recentTickets = ticketRepo.getRecentTickets();
 
   res.render('admin/dashboard', {
     title: 'Admin Dashboard',
-    counts, userCounts, unassigned, workload, recentTickets,
+    counts, unassigned, workload, recentTickets,
   });
 });
 
-// ── Ticket list ───────────────────────────────────────────────────────────────
+// Visualizza l'elenco completo di tutti i ticket del sistema.
+// Permette all'amministratore di filtrare per stato, priorità, categoria, operatore assegnato o testo.
 router.get('/admin/tickets', (req, res) => {
-  const { status, priority, category, assigned_to, search } = req.query;
+  const { status, priority, category, assigned_to, search, sort } = req.query;
   const operators = userRepo.listOperators();
-  const tickets   = ticketRepo.filterAdminTickets({ status, priority, category, assigned_to, search });
+  const filters   = { status, priority, category, assigned_to, search, sort: sort || 'urgenza' };
+  const tickets   = ticketRepo.filterAdminTickets(filters);
 
   res.render('admin/list', {
     title: 'Tutti i ticket',
     tickets, operators, CATEGORIES, PRIORITIES, STATUSES,
     activeFilters: {
       status: status || '', priority: priority || '', category: category || '',
-      assigned_to: assigned_to || '', search: search || '',
+      assigned_to: assigned_to || '', search: search || '', sort: sort || 'urgenza',
     },
   });
 });
 
-// ── Ticket detail ─────────────────────────────────────────────────────────────
+// Mostra i dettagli completi di uno specifico ticket all'amministratore.
+// Include tutti i commenti, lo storico delle modifiche, la valutazione finale e i controlli di gestione.
 router.get('/admin/tickets/:id', (req, res, next) => {
   const ticket = ticketRepo.findAdminDetailById(req.params.id);
   if (!ticket) return next();
@@ -57,18 +60,24 @@ router.get('/admin/tickets/:id', (req, res, next) => {
   }
 
   res.render('admin/ticket-detail', {
-    title: `Ticket #${ticket.id}`,
     ticket, comments, history, operators, rating,
     STATUSES, PRIORITIES,
     canEditPriority: !['risolto', 'chiuso'].includes(ticket.status),
+    isClosed: ticket.status === 'chiuso',
   });
 });
 
-// ── POST actions on a ticket ──────────────────────────────────────────────────
+// Aggiorna lo stato di un ticket.
+// Invia un'email all'utente creatore del ticket per notificargli il cambio di stato.
 router.post('/admin/tickets/:id/status', (req, res, next) => {
   const { status } = req.body;
   const ticket = ticketRepo.findById(req.params.id);
   if (!ticket) return next();
+
+  if (ticket.status === 'chiuso') {
+    req.setFlash('error', 'Ticket chiuso. Modifica non consentita.');
+    return res.redirect(`/admin/tickets/${ticket.id}`);
+  }
 
   if (STATUSES.includes(status) && status !== ticket.status) {
     const oldStatus = ticket.status;
@@ -80,10 +89,17 @@ router.post('/admin/tickets/:id/status', (req, res, next) => {
   res.redirect(`/admin/tickets/${ticket.id}`);
 });
 
+// Assegna o riassegna manualmente un ticket a uno specifico operatore.
+// Notifica sia l'operatore designato sia l'utente creatore tramite email.
 router.post('/admin/tickets/:id/assegna', (req, res, next) => {
   const { operator_id } = req.body;
   const ticket = ticketRepo.findById(req.params.id);
   if (!ticket) return next();
+
+  if (ticket.status === 'chiuso') {
+    req.setFlash('error', 'Ticket chiuso. Assegnazione non consentita.');
+    return res.redirect(`/admin/tickets/${ticket.id}`);
+  }
 
   const oldOp     = ticket.assigned_to ? userRepo.findNameById(ticket.assigned_to) : null;
   const oldOpName = oldOp ? oldOp.name : 'Non assegnato';
@@ -104,6 +120,8 @@ router.post('/admin/tickets/:id/assegna', (req, res, next) => {
   res.redirect(`/admin/tickets/${ticket.id}`);
 });
 
+// Modifica la priorità assegnata a un ticket.
+// Non è consentito modificare la priorità se il ticket è già stato risolto o chiuso.
 router.post('/admin/tickets/:id/priorita', (req, res, next) => {
   const { priority } = req.body;
   if (!PRIORITIES.includes(priority)) return res.redirect(`/admin/tickets/${req.params.id}`);
@@ -121,20 +139,35 @@ router.post('/admin/tickets/:id/priorita', (req, res, next) => {
   res.redirect(`/admin/tickets/${req.params.id}`);
 });
 
+// Permette all'amministratore di inserire un nuovo commento.
+// I commenti possono essere interni (visibili solo allo staff) o pubblici (visibili anche all'utente).
 router.post('/admin/tickets/:id/commenti', (req, res) => {
   const { body, is_internal } = req.body;
   if (!body || !body.trim()) {
     req.setFlash('error', 'Il commento non può essere vuoto.');
     return res.redirect(`/admin/tickets/${req.params.id}`);
   }
-  ticketRepo.addComment(req.params.id, res.locals.currentUser.id, body.trim(), is_internal === '1' ? 1 : 0);
+  const ticketId = req.params.id;
+  const ticket = ticketRepo.findById(ticketId);
+  if (ticket && ticket.status === 'chiuso') {
+    req.setFlash('error', 'Ticket chiuso. Commento non consentito.');
+    return res.redirect(`/admin/tickets/${ticketId}`);
+  }
+
+  ticketRepo.addComment(ticketId, res.locals.currentUser.id, body.trim(), is_internal === '1' ? 1 : 0);
   req.setFlash('success', 'Commento aggiunto.');
-  res.redirect(`/admin/tickets/${req.params.id}`);
+  res.redirect(`/admin/tickets/${ticketId}`);
 });
 
+// Assegna automaticamente il ticket all'operatore che ha meno ticket attivi in carico al momento.
 router.post('/admin/tickets/:id/auto-assign', (req, res, next) => {
   const ticket = ticketRepo.findById(req.params.id);
   if (!ticket) return next();
+
+  if (ticket.status === 'chiuso') {
+    req.setFlash('error', 'Ticket chiuso. Assegnazione automatica non consentita.');
+    return res.redirect(`/admin/tickets/${ticket.id}`);
+  }
 
   const operatorId = userRepo.getOperatorWithFewestTickets();
   if (!operatorId) {
@@ -157,7 +190,8 @@ router.post('/admin/tickets/:id/auto-assign', (req, res, next) => {
   res.redirect(`/admin/tickets/${ticket.id}`);
 });
 
-// ── User management ───────────────────────────────────────────────────────────
+// Elenca tutti gli utenti registrati nel sistema.
+// Restituisce anche il conteggio dei ticket associati a ciascun utente.
 router.get('/admin/utenti', (req, res) => {
   const users = userRepo.listUsersWithTicketCount();
   res.render('admin/utenti', { title: 'Gestione utenti', users });
@@ -264,7 +298,7 @@ router.post('/admin/utenti/:id/elimina', (req, res, next) => {
   res.redirect('/admin/utenti');
 });
 
-// ── Profilo admin ─────────────────────────────────────────────────────────────
+// Mostra il profilo personale dell'amministratore.
 router.get('/admin/profilo', (req, res) => {
   const user = userRepo.findById(res.locals.currentUser.id);
   res.render('admin/profilo', { title: 'Il mio profilo', utente: user });
