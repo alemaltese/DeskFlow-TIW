@@ -29,9 +29,15 @@
         })
         .then(function (data) {
           if (!data || !data.status) return;
-          statusEl.textContent = data.status;
-          STATUS_CLASSES.forEach(function (cls) { statusEl.classList.remove(cls); });
-          statusEl.classList.add('badge-' + data.status);
+          const currentStatus = statusEl.textContent.trim().toLowerCase();
+          
+          // Se lo stato effettivo sul DB è diverso da quello mostrato in pagina,
+          // la soluzione più robusta è ricaricare l'intera vista. 
+          // Questo aggiornerà non solo il badge, ma anche la timeline, i commenti 
+          // e la visibilità dei form (es. se viene chiuso, il form sparisce).
+          if (data.status !== currentStatus) {
+            window.location.reload();
+          }
         })
         .catch(function () {});
     }, 10000);

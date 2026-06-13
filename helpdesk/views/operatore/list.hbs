@@ -24,11 +24,10 @@
       <option value="altro" {{#if (eq filters.category 'altro')}}selected{{/if}}>Altro</option>
     </select>
     
-    <input type="text" name="search" class="filter-input" placeholder="Cerca nel titolo o descrizione..." value="{{filters.search}}">
     
     <div style="display:flex; align-items:center; gap:0.5rem; border-left:1px solid #e2e8f0; padding-left:1rem; margin-left:0.5rem;">
       <span style="font-size:0.875rem; color:#64748b;">Ordina:</span>
-      <button type="submit" name="sort" value="urgenza" class="btn btn-sm {{#if (eq filters.sort 'urgenza')}}btn-primary{{else}}btn-secondary{{/if}}">Urgenza</button>
+      <button type="submit" name="sort" value="priorita" class="btn btn-sm {{#if (eq filters.sort 'priorita')}}btn-primary{{else}}btn-secondary{{/if}}">Priorità</button>
       <button type="submit" name="sort" value="tempo" class="btn btn-sm {{#if (eq filters.sort 'tempo')}}btn-primary{{else}}btn-secondary{{/if}}">Tempo</button>
     </div>
 

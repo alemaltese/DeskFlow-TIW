@@ -2,26 +2,27 @@
 
 function requireUtente(req, res, next) {
   if (!res.locals.currentUser) {
-    req.session.returnTo = req.originalUrl;
-    return res.redirect('/login');
+    return res.status(403).render('errors/403', { title: 'Accesso Negato' });
   }
   next();
 }
 
 function requireOperatore(req, res, next) {
-  if (!res.locals.currentUser) return res.redirect('/login');
+  if (!res.locals.currentUser) {
+    return res.status(403).render('errors/403', { title: 'Accesso Negato' });
+  }
   if (res.locals.currentUser.role !== 'operatore' && res.locals.currentUser.role !== 'admin') {
-    req.setFlash('error', 'Non hai i permessi per questa pagina.');
-    return res.redirect('/');
+    return res.status(403).render('errors/403', { title: 'Accesso Negato' });
   }
   next();
 }
 
 function requireAdmin(req, res, next) {
-  if (!res.locals.currentUser) return res.redirect('/login');
+  if (!res.locals.currentUser) {
+    return res.status(403).render('errors/403', { title: 'Accesso Negato' });
+  }
   if (res.locals.currentUser.role !== 'admin') {
-    req.setFlash('error', 'Non hai i permessi per questa pagina.');
-    return res.redirect('/');
+    return res.status(403).render('errors/403', { title: 'Accesso Negato' });
   }
   next();
 }

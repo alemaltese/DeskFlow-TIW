@@ -14,16 +14,15 @@
         {{#if isAdmin}}
           <a href="/admin/dashboard">Dashboard</a>
           <a href="/admin/tickets">Ticket</a>
-          <a href="/admin/utenti">Utenti</a>
-          <a href="/admin/profilo">{{currentUser.name}}</a>
+          <span class="nav-username">{{currentUser.name}}</span>
         {{else}}
           {{#if isOperatore}}
             <a href="/operatore/dashboard">Dashboard</a>
             <a href="/operatore/tickets">Ticket</a>
-            <a href="/operatore/profilo">{{currentUser.name}}</a>
+            <span class="nav-username">{{currentUser.name}}</span>
           {{else}}
             <a href="/tickets">I miei ticket</a>
-            <a href="/profilo">{{currentUser.name}}</a>
+            <span class="nav-username">{{currentUser.name}}</span>
           {{/if}}
         {{/if}}
         <a href="/logout">Esci</a>

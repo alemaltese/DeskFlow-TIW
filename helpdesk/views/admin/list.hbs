@@ -13,30 +13,29 @@
     </select>
     <select name="priority" class="filter-select">
       <option value="">Tutte le priorità</option>
-      <option value="bassa">Bassa</option>
-      <option value="media">Media</option>
-      <option value="alta">Alta</option>
-      <option value="urgente">Urgente</option>
+      <option value="bassa" {{#ifEq activeFilters.priority "bassa"}}selected{{/ifEq}}>Bassa</option>
+      <option value="media" {{#ifEq activeFilters.priority "media"}}selected{{/ifEq}}>Media</option>
+      <option value="alta" {{#ifEq activeFilters.priority "alta"}}selected{{/ifEq}}>Alta</option>
+      <option value="urgente" {{#ifEq activeFilters.priority "urgente"}}selected{{/ifEq}}>Urgente</option>
     </select>
     <select name="category" class="filter-select">
       <option value="">Tutte le categorie</option>
-      <option value="tecnico">Tecnico</option>
-      <option value="account">Account</option>
-      <option value="fatturazione">Fatturazione</option>
-      <option value="altro">Altro</option>
+      <option value="tecnico" {{#ifEq activeFilters.category "tecnico"}}selected{{/ifEq}}>Tecnico</option>
+      <option value="account" {{#ifEq activeFilters.category "account"}}selected{{/ifEq}}>Account</option>
+      <option value="fatturazione" {{#ifEq activeFilters.category "fatturazione"}}selected{{/ifEq}}>Fatturazione</option>
+      <option value="altro" {{#ifEq activeFilters.category "altro"}}selected{{/ifEq}}>Altro</option>
     </select>
     <select name="assigned_to" class="filter-select">
       <option value="">Tutti gli operatori</option>
-      <option value="null">Non assegnati</option>
+      <option value="null" {{#ifEq activeFilters.assigned_to "null"}}selected{{/ifEq}}>Non assegnati</option>
       {{#each operators}}
-      <option value="{{this.id}}">{{this.name}}</option>
+      <option value="{{this.id}}" {{#ifEq ../activeFilters.assigned_to this.id}}selected{{/ifEq}}>{{this.name}}</option>
       {{/each}}
     </select>
-    <input type="text" name="search" class="filter-input" placeholder="Cerca nel titolo..." value="{{activeFilters.search}}">
     
     <div style="display:flex; align-items:center; gap:0.5rem; border-left:1px solid #e2e8f0; padding-left:1rem; margin-left:0.5rem;">
       <span style="font-size:0.875rem; color:#64748b;">Ordina:</span>
-      <button type="submit" name="sort" value="urgenza" class="btn btn-sm {{#ifEq activeFilters.sort 'urgenza'}}btn-primary{{else}}btn-secondary{{/ifEq}}">Urgenza</button>
+      <button type="submit" name="sort" value="priorita" class="btn btn-sm {{#ifEq activeFilters.sort 'priorita'}}btn-primary{{else}}btn-secondary{{/ifEq}}">Priorità</button>
       <button type="submit" name="sort" value="tempo" class="btn btn-sm {{#ifEq activeFilters.sort 'tempo'}}btn-primary{{else}}btn-secondary{{/ifEq}}">Tempo</button>
     </div>
 

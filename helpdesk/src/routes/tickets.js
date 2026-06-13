@@ -104,7 +104,7 @@ router.get('/tickets/:id', requireUtente, (req, res, next) => {
     return res.redirect('/tickets');
   }
 
-  const comments = ticketRepo.getPublicComments(ticketId)
+  const comments = ticketRepo.getComments(ticketId)
     .map(c => ({ ...c, isOwn: c.user_id === res.locals.currentUser.id }));
   const history  = ticketRepo.getHistory(ticketId);
   const rating   = ticketRepo.getRating(ticketId);
@@ -147,7 +147,7 @@ router.post('/tickets/:id/comments', requireUtente, (req, res) => {
     return res.redirect(`/tickets/${ticketId}`);
   }
 
-  ticketRepo.addComment(ticketId, res.locals.currentUser.id, content.trim(), 0);
+  ticketRepo.addComment(ticketId, res.locals.currentUser.id, content.trim());
 
   if (ticket.assigned_to) {
     const op = userRepo.findById(ticket.assigned_to);
@@ -208,71 +208,6 @@ router.post('/tickets/:id/riapri', requireUtente, (req, res) => {
   res.redirect(`/tickets/${ticketId}`);
 });
 
-/**
- * Mostra la pagina personale dove l'utente può visualizzare e gestire i dati 
- * relativi al proprio account, come nome, email e password.
- */
-router.get('/profilo', requireUtente, (req, res) => {
-  if (res.locals.currentUser.role !== 'utente') {
-    return res.redirect(`/${res.locals.currentUser.role}/profilo`);
-  }
-  res.render('utente/profilo', { title: 'Il mio profilo', user: res.locals.currentUser });
-});
 
-/**
- * Processa il modulo di aggiornamento dei dati del profilo. Se i campi sono validi
- * (come un'email corretta e non duplicata nel sistema), le informazioni vengono salvate.
- * In caso di cambio password, il sistema verificherà la vecchia password e cripterà la nuova.
- */
-router.post('/profilo', requireUtente, async (req, res) => {
-  if (res.locals.currentUser.role !== 'utente') {
-    req.setFlash('error', 'Operazione non consentita.');
-    return res.redirect('/tickets');
-  }
-  const { name, email, old_password, new_password, confirm_password } = req.body;
-
-  if (!name || !name.trim()) {
-    req.setFlash('error', 'Il nome non può essere vuoto.');
-    return res.redirect('/profilo');
-  }
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-    req.setFlash('error', 'Indirizzo email non valido.');
-    return res.redirect('/profilo');
-  }
-
-  const existing = userRepo.findIdByEmailExcluding(email.trim(), res.locals.currentUser.id);
-  if (existing) {
-    req.setFlash('error', 'Email già in uso da un altro account.');
-    return res.redirect('/profilo');
-  }
-
-  if (new_password) {
-    if (!old_password) {
-      req.setFlash('error', 'Inserisci la password attuale per cambiarla.');
-      return res.redirect('/profilo');
-    }
-    if (new_password !== confirm_password) {
-      req.setFlash('error', 'Le nuove password non coincidono.');
-      return res.redirect('/profilo');
-    }
-    if (new_password.length < 6) {
-      req.setFlash('error', 'La nuova password deve essere di almeno 6 caratteri.');
-      return res.redirect('/profilo');
-    }
-    const dbUser = userRepo.findPasswordHashById(res.locals.currentUser.id);
-    const match  = await bcrypt.compare(old_password, dbUser.password_hash);
-    if (!match) {
-      req.setFlash('error', 'Password attuale non corretta.');
-      return res.redirect('/profilo');
-    }
-    const newHash = await bcrypt.hash(new_password, 10);
-    userRepo.updateUserNameEmailPassword(res.locals.currentUser.id, name.trim(), email.trim(), newHash);
-  } else {
-    userRepo.updateUserNameEmail(res.locals.currentUser.id, name.trim(), email.trim());
-  }
-
-  req.setFlash('success', 'Profilo aggiornato con successo.');
-  res.redirect('/profilo');
-});
 
 module.exports = router;

@@ -1,0 +1,11 @@
+<section class="error-page">
+  <h1>403 — Accesso Negato</h1>
+  <p>Non hai i permessi necessari per visualizzare questa pagina.</p>
+  <p>
+    {{#if currentUser}}
+      <a href="/">Torna alla home</a>
+    {{else}}
+      <a href="/login">Vai alla pagina di Login</a>
+    {{/if}}
+  </p>
+</section>

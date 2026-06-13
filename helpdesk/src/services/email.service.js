@@ -5,27 +5,17 @@ const nodemailer = require('nodemailer');
 const user = process.env.EMAIL_USER || '';
 const pass = process.env.EMAIL_PASS || '';
 
-// Controllo euristico: la mail è disabilitata se non è configurata o se usa i valori del file .env.example
-const isEmailConfigured = user && pass && user !== 'tuamail@gmail.com' && pass !== 'inserisci_password_qui';
-
-const transporter = isEmailConfigured ? nodemailer.createTransport({
+const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: user,
     pass: pass,
   },
-}) : null;
+});
 
-const FROM = '"Helpdesk DeskFlow" <' + (isEmailConfigured ? user : 'noreply@deskflow.local') + '>';
+const FROM = '"Helpdesk DeskFlow" <' + user + '>';
 
 async function send(to, subject, text, html) {
-  if (!isEmailConfigured) {
-    console.log('\n--- EMAIL SIMULATA (Modalità Sviluppo) ---');
-    console.log(`A: ${to}\nOggetto: ${subject}\nTesto:\n${text}`);
-    console.log('------------------------------------------\n');
-    return;
-  }
-
   try {
     await transporter.sendMail({ from: FROM, to, subject, text, html });
     console.log('[email] sent to', to, '|', subject);
@@ -68,16 +58,12 @@ function wrapHtml(title, content) {
 
 const ticketRepo = require('../repositories/tickets.repo');
 
-async function sendWelcomeEmail(userEmail, userName, tempPassword = null) {
+async function sendWelcomeEmail(userEmail, userName) {
   const subject = 'Benvenuto su DeskFlow';
-  const text    = `Ciao ${userName},\n\nIl tuo account DeskFlow è stato creato con successo.${tempPassword ? `\nLa tua password temporanea: ${tempPassword}` : ''}\n\nBuon lavoro!`;
+  const text    = `Ciao ${userName},\n\nIl tuo account DeskFlow è stato creato con successo.\n\nBuon lavoro!`;
   
-  let content = `<p>Ciao <strong>${userName}</strong>,</p>
-                 <p>Siamo felici di darti il benvenuto! Il tuo account DeskFlow è stato creato con successo e ora puoi accedere alla piattaforma per inviare o gestire le tue richieste di assistenza.</p>`;
-  if (tempPassword) {
-    content += `<div class="highlight"><strong>Password temporanea:</strong> ${tempPassword}</div>
-                <p>Ti consigliamo di cambiare la password al tuo primo accesso tramite il tuo profilo.</p>`;
-  }
+  const content = `<p>Ciao <strong>${userName}</strong>,</p>
+                   <p>Siamo felici di darti il benvenuto! Il tuo account DeskFlow è stato creato con successo e ora puoi accedere alla piattaforma per inviare o gestire le tue richieste di assistenza.</p>`;
   
   await send(userEmail, subject, text, wrapHtml('Benvenuto a bordo!', content));
 }

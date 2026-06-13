@@ -62,15 +62,6 @@
       {{#if comments.length}}
       <div class="comment-container">
         {{#each comments}}
-          {{#if this.is_internal}}
-          {{!-- Nota interna --}}
-          <div class="note-interna" style="align-self:stretch; max-width:100%;">
-            <div class="note-label">🔒 Nota interna — {{this.author_name}}</div>
-            <p style="margin-top:0.4rem; white-space:pre-wrap;">{{this.content}}</p>
-            <div class="text-muted" style="font-size:0.78rem; margin-top:0.5rem;">{{formatDate this.created_at}}</div>
-          </div>
-          {{else}}
-          {{!-- Commento pubblico --}}
           <div class="comment {{#if this.isOwn}}comment-own{{else}}comment-other{{/if}}">
             <div class="comment-header">
               <strong>{{this.author_name}}</strong>
@@ -79,7 +70,6 @@
             </div>
             <div class="comment-body">{{this.content}}</div>
           </div>
-          {{/if}}
         {{/each}}
       </div>
       {{else}}
@@ -98,12 +88,8 @@
           placeholder="Rispondi al cliente o aggiungi una nota interna…"
           required
         ></textarea>
-        <div style="display:flex; align-items:center; gap:1.25rem; margin-top:0.75rem;">
-          <label style="display:flex; align-items:center; gap:0.4rem; font-weight:400; cursor:pointer; margin:0;">
-            <input type="checkbox" name="is_internal" value="1" style="width:auto; accent-color:#f59e0b;">
-            <span style="font-size:0.88rem; color:#64748b;">Nota interna <em>(visibile solo allo staff)</em></span>
-          </label>
-          <button type="submit" class="btn btn-primary btn-sm" style="margin-left:auto;">Invia</button>
+        <div style="display:flex; justify-content:flex-end; margin-top:0.75rem;">
+          <button type="submit" class="btn btn-primary btn-sm">Invia</button>
         </div>
       </form>
       {{else}}

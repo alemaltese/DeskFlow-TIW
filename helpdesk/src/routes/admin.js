@@ -38,17 +38,17 @@ router.get('/admin/dashboard', (req, res) => {
  * categoria, operatore a cui è assegnato il ticket, o effettuando una ricerca testuale.
  */
 router.get('/admin/tickets', (req, res) => {
-  const { status, priority, category, assigned_to, search, sort } = req.query;
+  const { status, priority, category, assigned_to, sort } = req.query;
   const operators = userRepo.listOperators();
-  const filters   = { status, priority, category, assigned_to, search, sort: sort || 'urgenza' };
+  const filters   = { status, priority, category, assigned_to, sort: sort || 'priorita' };
   const tickets   = ticketRepo.filterAdminTickets(filters);
 
   res.render('admin/list', {
-    title: 'Tutti i ticket',
+    title: 'Tutti i Ticket',
     tickets, operators, CATEGORIES, PRIORITIES, STATUSES,
     activeFilters: {
       status: status || '', priority: priority || '', category: category || '',
-      assigned_to: assigned_to || '', search: search || '', sort: sort || 'urgenza',
+      assigned_to: assigned_to || '', sort: sort || 'priorita',
     },
   });
 });
@@ -63,7 +63,7 @@ router.get('/admin/tickets/:id', (req, res, next) => {
   const ticket = ticketRepo.findAdminDetailById(req.params.id);
   if (!ticket) return next();
 
-  const comments  = ticketRepo.getAllComments(req.params.id);
+  const comments  = ticketRepo.getComments(req.params.id);
   const history   = ticketRepo.getHistory(req.params.id);
   const operators = userRepo.listOperators();
   const rating    = ticketRepo.getRating(req.params.id);
@@ -170,7 +170,7 @@ router.post('/admin/tickets/:id/priorita', (req, res, next) => {
  * note private destinate esclusivamente alla consultazione da parte dello staff.
  */
 router.post('/admin/tickets/:id/commenti', (req, res) => {
-  const { body, is_internal } = req.body;
+  const { body } = req.body;
   if (!body || !body.trim()) {
     req.setFlash('error', 'Il commento non può essere vuoto.');
     return res.redirect(`/admin/tickets/${req.params.id}`);
@@ -182,7 +182,7 @@ router.post('/admin/tickets/:id/commenti', (req, res) => {
     return res.redirect(`/admin/tickets/${ticketId}`);
   }
 
-  ticketRepo.addComment(ticketId, res.locals.currentUser.id, body.trim(), is_internal === '1' ? 1 : 0);
+  ticketRepo.addComment(ticketId, res.locals.currentUser.id, body.trim());
   req.setFlash('success', 'Commento aggiunto.');
   res.redirect(`/admin/tickets/${ticketId}`);
 });
@@ -222,124 +222,6 @@ router.post('/admin/tickets/:id/auto-assign', (req, res, next) => {
   res.redirect(`/admin/tickets/${ticket.id}`);
 });
 
-/**
- * Visualizza un elenco strutturato di tutti gli account attualmente registrati nel sistema.
- * Per facilitare la gestione, per ogni utente viene calcolato e mostrato anche il numero
- * totale di ticket associati, permettendo di identificare rapidamente gli utenti più attivi.
- */
-router.get('/admin/utenti', (req, res) => {
-  const users = userRepo.listUsersWithTicketCount();
-  res.render('admin/utenti', { title: 'Gestione utenti', users });
-});
 
-router.get('/admin/utenti/nuovo', (req, res) => {
-  res.render('admin/utente-form', { title: 'Nuovo utente', user: null, isNew: true });
-});
-
-router.post('/admin/utenti', async (req, res) => {
-  const { name, email, password, role } = req.body;
-  const errors = [];
-  if (!name  || !name.trim())  errors.push('Nome obbligatorio.');
-  if (!email || !email.trim()) errors.push('Email obbligatoria.');
-  if (!password || password.length < 6) errors.push('Password di almeno 6 caratteri.');
-  if (!['utente', 'operatore'].includes(role)) errors.push('Ruolo non valido.');
-
-  if (errors.length) {
-    return res.render('admin/utente-form', {
-      title: 'Nuovo utente', user: { name, email, role }, isNew: true, errors,
-    });
-  }
-
-  const existing = userRepo.findIdByEmail(email.trim().toLowerCase());
-  if (existing) {
-    return res.render('admin/utente-form', {
-      title: 'Nuovo utente', user: { name, email, role }, isNew: true,
-      errors: ['Email già registrata.'],
-    });
-  }
-
-  const hash = await bcrypt.hash(password, 12);
-  userRepo.createUser(name.trim(), email.trim().toLowerCase(), hash, role);
-
-  emailService.sendWelcomeEmail(email.trim().toLowerCase(), name.trim(), password).catch(() => {});
-
-  req.setFlash('success', 'Utente creato.');
-  res.redirect('/admin/utenti');
-});
-
-router.get('/admin/utenti/:id/modifica', (req, res, next) => {
-  const user = userRepo.findByIdNotAdmin(req.params.id);
-  if (!user) return next();
-  res.render('admin/utente-form', { title: 'Modifica utente', user, isNew: false });
-});
-
-router.post('/admin/utenti/:id', async (req, res, next) => {
-  const existing = userRepo.findByIdNotAdmin(req.params.id);
-  if (!existing) return next();
-
-  const { name, email, role, new_password } = req.body;
-  const errors = [];
-  if (!name  || !name.trim())  errors.push('Nome obbligatorio.');
-  if (!email || !email.trim()) errors.push('Email obbligatoria.');
-  if (!['utente', 'operatore'].includes(role)) errors.push('Ruolo non valido.');
-
-  if (errors.length) {
-    return res.render('admin/utente-form', {
-      title: 'Modifica utente',
-      user: { ...existing, name, email, role }, isNew: false, errors,
-    });
-  }
-
-  const dup = userRepo.findIdByEmailExcluding(email.trim().toLowerCase(), existing.id);
-  if (dup) {
-    return res.render('admin/utente-form', {
-      title: 'Modifica utente',
-      user: { ...existing, name, email, role }, isNew: false,
-      errors: ['Email già in uso da un altro utente.'],
-    });
-  }
-
-  let hash = existing.password_hash;
-  if (new_password && new_password.length >= 6) {
-    hash = await bcrypt.hash(new_password, 12);
-  }
-
-  userRepo.updateUserFull(existing.id, name.trim(), email.trim().toLowerCase(), hash, role);
-  req.setFlash('success', 'Utente aggiornato.');
-  res.redirect('/admin/utenti');
-});
-
-router.post('/admin/utenti/:id/elimina', (req, res, next) => {
-  const user = userRepo.findByIdNotAdmin(req.params.id);
-  if (!user) return next();
-
-  if (userRepo.countUserTickets(user.id) > 0) {
-    req.setFlash('error', 'Impossibile eliminare: l\'utente ha ticket associati.');
-    return res.redirect('/admin/utenti');
-  }
-  if (userRepo.countUserComments(user.id) > 0) {
-    req.setFlash('error', 'Impossibile eliminare: l\'utente ha commenti nel sistema.');
-    return res.redirect('/admin/utenti');
-  }
-  if (userRepo.countUserHistory(user.id) > 0) {
-    req.setFlash('error', 'Impossibile eliminare: l\'utente ha modifiche storiche associate.');
-    return res.redirect('/admin/utenti');
-  }
-
-  userRepo.nullifyAssignedTo(user.id);
-  userRepo.deleteUser(user.id);
-
-  req.setFlash('success', `Utente "${user.name}" eliminato.`);
-  res.redirect('/admin/utenti');
-});
-
-/**
- * Mostra la schermata dedicata al profilo personale dell'amministratore,
- * dove quest'ultimo può prendere visione ed eventualmente modificare le proprie informazioni.
- */
-router.get('/admin/profilo', (req, res) => {
-  const user = userRepo.findById(res.locals.currentUser.id);
-  res.render('admin/profilo', { title: 'Il mio profilo', utente: user });
-});
 
 module.exports = router;

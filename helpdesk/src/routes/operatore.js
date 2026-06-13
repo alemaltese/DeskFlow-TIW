@@ -45,16 +45,16 @@ router.get('/operatore/dashboard', requireOperatore, (req, res) => {
  * priorità, categoria di appartenenza o effettuando una veloce ricerca testuale.
  */
 router.get('/operatore/tickets', requireOperatore, (req, res) => {
-  const { status, priority, category, search, sort } = req.query;
+  const { status, priority, category, sort } = req.query;
 
-  const filters = { status, priority, category, search, sort: sort || 'urgenza' };
+  const filters = { status, priority, category, sort: sort || 'priorita' };
   const tickets = ticketRepo.filterOperatorTickets(res.locals.currentUser.id, filters);
 
   res.render('operatore/list', {
     title: 'I miei ticket',
     tickets,
     filters,
-    hasFilters: !!(status || priority || category || search),
+    hasFilters: !!(status || priority || category),
   });
 });
 
@@ -75,9 +75,9 @@ router.get('/operatore/tickets/:id', requireOperatore, (req, res, next) => {
     return res.redirect('/operatore/tickets');
   }
 
-  const comments = ticketRepo.getAllComments(ticketId).map(c => ({
+  const comments = ticketRepo.getComments(ticketId).map(c => ({
     ...c,
-    isOwn: !c.is_internal && c.user_id === res.locals.currentUser.id,
+    isOwn: c.user_id === res.locals.currentUser.id,
   }));
   const history = ticketRepo.getHistory(ticketId);
   const rating  = ticketRepo.getRating(ticketId);
@@ -188,82 +188,21 @@ router.post('/operatore/tickets/:id/comments', requireOperatore, (req, res) => {
     return res.redirect(`/operatore/tickets/${ticketId}`);
   }
 
-  const { content, is_internal: isInternalStr } = req.body;
+  const { content } = req.body;
   if (!content || !content.trim() || content.trim().length > 1000) {
     req.setFlash('error', 'Il messaggio non può essere vuoto o superare 1000 caratteri.');
     return res.redirect(`/operatore/tickets/${ticketId}`);
   }
 
-  const is_internal = isInternalStr === '1' ? 1 : 0;
-  ticketRepo.addComment(ticketId, res.locals.currentUser.id, content.trim(), is_internal);
+  ticketRepo.addComment(ticketId, res.locals.currentUser.id, content.trim());
 
-  if (!is_internal) {
-    const owner = userRepo.findById(ticket.user_id);
-    if (owner) emailService.sendNewCommentEmail(owner.email, ticketId, res.locals.currentUser.name, false).catch(() => {});
-  }
+  const owner = userRepo.findById(ticket.user_id);
+  if (owner) emailService.sendNewCommentEmail(owner.email, ticketId, res.locals.currentUser.name, false).catch(() => {});
 
-  req.setFlash('success', is_internal ? 'Nota interna aggiunta.' : 'Risposta inviata al cliente.');
+  req.setFlash('success', 'Risposta inviata al cliente.');
   res.redirect(`/operatore/tickets/${ticketId}`);
 });
 
-/**
- * Apre la schermata personale in cui l'operatore può visionare le proprie
- * informazioni di accesso, come il nome di sistema e l'indirizzo email.
- */
-router.get('/operatore/profilo', requireOperatore, (req, res) => {
-  res.render('operatore/profilo', { title: 'Il mio profilo', user: res.locals.currentUser });
-});
 
-/**
- * Endpoint che riceve le modifiche ai dati di profilo dell'operatore.
- * Gestisce l'aggiornamento dell'email (verificando che non sia già presa)
- * e, ove richiesto, gestisce il cambio password in modo sicuro controllando l'hash.
- */
-router.post('/operatore/profilo', requireOperatore, async (req, res) => {
-  const { name, email, old_password, new_password, confirm_password } = req.body;
-
-  if (!name || !name.trim()) {
-    req.setFlash('error', 'Il nome non può essere vuoto.');
-    return res.redirect('/operatore/profilo');
-  }
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-    req.setFlash('error', 'Indirizzo email non valido.');
-    return res.redirect('/operatore/profilo');
-  }
-
-  const existing = userRepo.findIdByEmailExcluding(email.trim(), res.locals.currentUser.id);
-  if (existing) {
-    req.setFlash('error', 'Email già in uso da un altro account.');
-    return res.redirect('/operatore/profilo');
-  }
-
-  if (new_password) {
-    if (!old_password) {
-      req.setFlash('error', 'Inserisci la password attuale per cambiarla.');
-      return res.redirect('/operatore/profilo');
-    }
-    if (new_password !== confirm_password) {
-      req.setFlash('error', 'Le nuove password non coincidono.');
-      return res.redirect('/operatore/profilo');
-    }
-    if (new_password.length < 6) {
-      req.setFlash('error', 'La nuova password deve essere di almeno 6 caratteri.');
-      return res.redirect('/operatore/profilo');
-    }
-    const dbUser = userRepo.findPasswordHashById(res.locals.currentUser.id);
-    const match  = await bcrypt.compare(old_password, dbUser.password_hash);
-    if (!match) {
-      req.setFlash('error', 'Password attuale non corretta.');
-      return res.redirect('/operatore/profilo');
-    }
-    const newHash = await bcrypt.hash(new_password, 10);
-    userRepo.updateUserNameEmailPassword(res.locals.currentUser.id, name.trim(), email.trim(), newHash);
-  } else {
-    userRepo.updateUserNameEmail(res.locals.currentUser.id, name.trim(), email.trim());
-  }
-
-  req.setFlash('success', 'Profilo aggiornato con successo.');
-  res.redirect('/operatore/profilo');
-});
 
 module.exports = router;

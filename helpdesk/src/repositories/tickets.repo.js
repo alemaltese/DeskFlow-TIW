@@ -58,15 +58,7 @@ const findAdminDetailByIdStmt = db.prepare(`
  * e alla tracciabilità degli eventi. Recuperano l'intera cronologia dei passaggi
  * di stato e le valutazioni finali rilasciate dai clienti.
  */
-const getPublicCommentsStmt = db.prepare(`
-  SELECT c.*, u.name AS author_name, u.role AS author_role
-  FROM comments c
-  JOIN users u ON c.user_id = u.id
-  WHERE c.ticket_id = ? AND c.is_internal = 0
-  ORDER BY c.created_at ASC
-`);
-
-const getAllCommentsStmt = db.prepare(`
+const getCommentsStmt = db.prepare(`
   SELECT c.*, u.name AS author_name, u.role AS author_role
   FROM comments c
   JOIN users u ON c.user_id = u.id
@@ -189,8 +181,8 @@ const insertHistoryStmt = db.prepare(`
 
 
 const insertCommentStmt = db.prepare(`
-  INSERT INTO comments (ticket_id, user_id, content, is_internal)
-  VALUES (?, ?, ?, ?)
+  INSERT INTO comments (ticket_id, user_id, content)
+  VALUES (?, ?, ?)
 `);
 
 const insertRatingStmt = db.prepare(`
@@ -279,8 +271,7 @@ function getUserTicketIndex(id)      {
 function findByUserId(userId)        { return findByUserIdStmt.all(userId); }
 function findDetailById(id)          { return findDetailByIdStmt.get(id); }
 function findAdminDetailById(id)     { return findAdminDetailByIdStmt.get(id); }
-function getPublicComments(ticketId) { return getPublicCommentsStmt.all(ticketId); }
-function getAllComments(ticketId)     { return getAllCommentsStmt.all(ticketId); }
+function getComments(ticketId)       { return getCommentsStmt.all(ticketId); }
 function getHistory(ticketId)        { return getHistoryStmt.all(ticketId); }
 function getRating(ticketId)         { return getRatingStmt.get(ticketId); }
 
@@ -295,18 +286,13 @@ function getRecentTickets()              { return getRecentTicketsStmt.all(); }
 
 // NOTA: Questa è una query dinamica. Viene costruita ed eseguita "on the fly"
 // poiché la clausola WHERE dipende dai parametri di filtraggio richiesti dal client.
-function filterOperatorTickets(operatorId, { status, priority, category, search, sort } = {}) {
+function filterOperatorTickets(operatorId, { status, priority, category, sort } = {}) {
   const conditions = ['t.assigned_to = ?'];
   const params     = [operatorId];
 
   if (status   && VALID_STATUS.includes(status))     { conditions.push('t.status = ?');   params.push(status); }
   if (priority && VALID_PRIORITY.includes(priority)) { conditions.push('t.priority = ?'); params.push(priority); }
   if (category && VALID_CATEGORY.includes(category)) { conditions.push('t.category = ?'); params.push(category); }
-  if (search && search.trim()) {
-    conditions.push('(t.title LIKE ? OR t.description LIKE ?)');
-    const term = `%${search.trim()}%`;
-    params.push(term, term);
-  }
 
   return db.prepare(`
     SELECT t.*, u.name AS user_name
@@ -319,7 +305,7 @@ function filterOperatorTickets(operatorId, { status, priority, category, search,
 
 // NOTA: Come per l'operatore, questa è una query dinamica costruita a runtime
 // per supportare i filtri avanzati della dashboard amministratore.
-function filterAdminTickets({ status, priority, category, assigned_to, search, sort } = {}) {
+function filterAdminTickets({ status, priority, category, assigned_to, sort } = {}) {
   const conditions = [];
   const params     = [];
 
@@ -331,10 +317,6 @@ function filterAdminTickets({ status, priority, category, assigned_to, search, s
   } else if (assigned_to) {
     conditions.push('t.assigned_to = ?');
     params.push(Number(assigned_to));
-  }
-  if (search && search.trim()) {
-    conditions.push('t.title LIKE ?');
-    params.push(`%${search.trim()}%`);
   }
 
   const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
@@ -359,8 +341,8 @@ function filterAdminTickets({ status, priority, category, assigned_to, search, s
 function createTicket(userId, title, description, category, priority, assignedTo) {
   return createTicketTx(userId, title, description, category, priority, assignedTo);
 }
-function addComment(ticketId, userId, content, isInternal) {
-  return insertCommentStmt.run(ticketId, userId, content, isInternal);
+function addComment(ticketId, userId, content) {
+  return insertCommentStmt.run(ticketId, userId, content);
 }
 function closeTicket(ticketId, userId, score, note) {
   return closeTicketTx(ticketId, userId, score, note);
@@ -390,8 +372,7 @@ module.exports = {
   findByUserId,
   findDetailById,
   findAdminDetailById,
-  getPublicComments,
-  getAllComments,
+  getComments,
   getHistory,
   getRating,
   getStatusCountsByOperator,

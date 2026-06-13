@@ -114,11 +114,10 @@
     <div class="card" style="margin-top:1.5rem;">
       <h2>Conversazione</h2>
       {{#each comments}}
-      <div class="comment-container {{#if this.is_internal}}note-interna{{/if}}" style="margin-top:1rem;">
+      <div class="comment-container" style="margin-top:1rem;">
         <div class="comment-header">
           <strong>{{this.author_name}}</strong>
           <span style="color:#64748b; font-size:0.8rem;">{{capitalize this.author_role}}</span>
-          {{#if this.is_internal}}<span class="badge" style="background:#fef3c7; color:#92400e; font-size:0.7rem;">Nota interna</span>{{/if}}
           <span style="color:#94a3b8; font-size:0.8rem; margin-left:auto;">{{formatDate this.created_at}}</span>
         </div>
         <div class="comment-body">{{this.content}}</div>
@@ -133,11 +132,7 @@
           <label for="body">Aggiungi commento</label>
           <textarea id="body" name="body" rows="3" required></textarea>
         </div>
-        <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
-          <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.875rem; cursor:pointer;">
-            <input type="checkbox" name="is_internal" value="1">
-            Nota interna (visibile solo allo staff)
-          </label>
+        <div style="display:flex; justify-content:flex-end; margin-top:0.5rem;">
           <button type="submit" class="btn btn-primary btn-sm">Invia</button>
         </div>
       </form>
