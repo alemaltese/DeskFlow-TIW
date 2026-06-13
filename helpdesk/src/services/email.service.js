@@ -2,17 +2,30 @@
 
 const nodemailer = require('nodemailer');
 
-const transporter = nodemailer.createTransport({
+const user = process.env.EMAIL_USER || '';
+const pass = process.env.EMAIL_PASS || '';
+
+// Controllo euristico: la mail è disabilitata se non è configurata o se usa i valori del file .env.example
+const isEmailConfigured = user && pass && user !== 'tuamail@gmail.com' && pass !== 'inserisci_password_qui';
+
+const transporter = isEmailConfigured ? nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: user,
+    pass: pass,
   },
-});
+}) : null;
 
-const FROM = '"Helpdesk DeskFlow" <' + process.env.EMAIL_USER + '>';
+const FROM = '"Helpdesk DeskFlow" <' + (isEmailConfigured ? user : 'noreply@deskflow.local') + '>';
 
 async function send(to, subject, text, html) {
+  if (!isEmailConfigured) {
+    console.log('\n--- EMAIL SIMULATA (Modalità Sviluppo) ---');
+    console.log(`A: ${to}\nOggetto: ${subject}\nTesto:\n${text}`);
+    console.log('------------------------------------------\n');
+    return;
+  }
+
   try {
     await transporter.sendMail({ from: FROM, to, subject, text, html });
     console.log('[email] sent to', to, '|', subject);

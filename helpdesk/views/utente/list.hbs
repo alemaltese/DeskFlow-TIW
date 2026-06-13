@@ -8,7 +8,6 @@
   <table>
     <thead>
       <tr>
-        <th style="width:50px">#</th>
         <th>Titolo</th>
         <th>Categoria</th>
         <th>Priorità</th>
@@ -19,7 +18,6 @@
     <tbody>
       {{#each tickets}}
       <tr>
-        <td class="text-muted">{{this.userIndex}}</td>
         <td><a href="/tickets/{{this.id}}">{{this.title}}</a></td>
         <td>{{capitalize this.category}}</td>
         <td><span class="badge badge-{{this.priority}}">{{capitalize this.priority}}</span></td>

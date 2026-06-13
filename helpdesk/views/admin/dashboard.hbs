@@ -28,7 +28,7 @@
         <tbody>
           {{#each unassigned}}
           <tr>
-            <td>#{{this.display_id}}</td>
+            <td>#{{this.id}}</td>
             <td>{{this.title}}</td>
             <td>{{this.user_name}}</td>
             <td><span class="badge badge-{{this.priority}}">{{capitalize this.priority}}</span></td>
@@ -63,7 +63,7 @@
         <tbody>
           {{#each recentTickets}}
           <tr>
-            <td><a href="/admin/tickets/{{this.id}}">#{{this.display_id}}</a></td>
+            <td><a href="/admin/tickets/{{this.id}}">#{{this.id}}</a></td>
             <td>{{this.title}}</td>
             <td>{{this.user_name}}</td>
             <td>{{#if this.operator_name}}{{this.operator_name}}{{else}}<span class="text-muted">—</span>{{/if}}</td>

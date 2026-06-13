@@ -19,7 +19,7 @@ const VALID_CATEGORY = ['tecnico', 'account', 'fatturazione', 'altro'];
  * di base dei ticket, come la ricerca per ID, la lista dei ticket di un utente
  * o la visualizzazione dettagliata dei dati incrociati con le anagrafiche.
  */
-const findByIdStmt = db.prepare(`SELECT * FROM v_tickets WHERE id = ?`);
+const findByIdStmt = db.prepare(`SELECT * FROM tickets WHERE id = ?`);
 
 const getUserTicketIndexStmt = db.prepare(`
   SELECT COUNT(*) AS idx
@@ -36,7 +36,7 @@ const findByUserIdStmt = db.prepare(`
 
 const findDetailByIdStmt = db.prepare(`
   SELECT t.*, u.name AS user_name, op.name AS operator_name
-  FROM v_tickets t
+  FROM tickets t
   JOIN users u ON t.user_id = u.id
   LEFT JOIN users op ON t.assigned_to = op.id
   WHERE t.id = ?
@@ -44,7 +44,7 @@ const findDetailByIdStmt = db.prepare(`
 
 const findAdminDetailByIdStmt = db.prepare(`
   SELECT t.*, u.name AS user_name, u.email AS user_email, op.name AS operator_name
-  FROM v_tickets t
+  FROM tickets t
   JOIN users u ON u.id = t.user_id
   LEFT JOIN users op ON op.id = t.assigned_to
   WHERE t.id = ?
@@ -101,7 +101,7 @@ const getStatusCountsByOperatorStmt = db.prepare(`
 
 const getActiveTicketsByOperatorStmt = db.prepare(`
   SELECT t.*, u.name AS user_name
-  FROM v_tickets t
+  FROM tickets t
   JOIN users u ON t.user_id = u.id
   WHERE t.assigned_to = ? AND t.status IN ('aperto', 'in_corso')
   ORDER BY t.created_at DESC
@@ -140,9 +140,9 @@ const getTicketCountsAdminStmt = db.prepare(`
 `);
 
 const getUnassignedTicketsStmt = db.prepare(`
-  SELECT t.id, t.display_id, t.title, t.category, t.priority, t.status, t.created_at,
+  SELECT t.id, t.title, t.category, t.priority, t.status, t.created_at,
          u.name AS user_name
-  FROM v_tickets t
+  FROM tickets t
   JOIN users u ON u.id = t.user_id
   WHERE t.assigned_to IS NULL AND t.status NOT IN ('risolto', 'chiuso')
   ORDER BY t.created_at DESC
@@ -160,9 +160,9 @@ const getOperatorWorkloadStmt = db.prepare(`
 `);
 
 const getRecentTicketsStmt = db.prepare(`
-  SELECT t.id, t.display_id, t.title, t.category, t.priority, t.status, t.created_at,
+  SELECT t.id, t.title, t.category, t.priority, t.status, t.created_at,
          u.name AS user_name, op.name AS operator_name
-  FROM v_tickets t
+  FROM tickets t
   JOIN users u ON u.id = t.user_id
   LEFT JOIN users op ON op.id = t.assigned_to
   ORDER BY t.created_at DESC
@@ -310,7 +310,7 @@ function filterOperatorTickets(operatorId, { status, priority, category, search,
 
   return db.prepare(`
     SELECT t.*, u.name AS user_name
-    FROM v_tickets t
+    FROM tickets t
     JOIN users u ON t.user_id = u.id
     WHERE ${conditions.join(' AND ')}
     ORDER BY ${sort === 'tempo' ? 't.created_at DESC' : `${PRIORITY_ORDER} DESC, t.created_at DESC`}
@@ -339,9 +339,9 @@ function filterAdminTickets({ status, priority, category, assigned_to, search, s
 
   const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
   return db.prepare(`
-    SELECT t.id, t.display_id, t.title, t.category, t.priority, t.status, t.created_at,
+    SELECT t.id, t.title, t.category, t.priority, t.status, t.created_at,
            u.name AS user_name, op.name AS operator_name
-    FROM v_tickets t
+    FROM tickets t
     JOIN users u ON u.id = t.user_id
     LEFT JOIN users op ON op.id = t.assigned_to
     ${where}
