@@ -8,9 +8,9 @@ Applicazione web di helpdesk per la gestione di ticket di supporto, sviluppata c
 
 | Ruolo | Funzionalità |
 |---|---|
-| **Utente** | Registrazione / login, apertura ticket con categoria e priorità, commenti pubblici, chiusura con valutazione a stelle (1–5), riapertura ticket chiusi, modifica profilo e password |
-| **Operatore** | Dashboard personale con KPI, lista ticket assegnati con filtri, cambio stato (in_corso / risolto), modifica priorità, commenti pubblici e note interne (visibili solo allo staff), modifica profilo |
-| **Admin** | Dashboard globale con workload operatori, lista ticket con filtri avanzati, assegnazione manuale e auto-assign (operatore con meno ticket attivi), cambio stato / priorità, commenti, gestione utenti (CRUD), profilo |
+| **Utente** | Registrazione / login, apertura ticket con categoria e priorità, commenti pubblici, chiusura con valutazione a stelle (1–5), riapertura ticket chiusi |
+| **Operatore** | Dashboard personale con KPI, lista ticket assegnati con filtri, cambio stato (in_corso / risolto), modifica priorità, commenti pubblici |
+| **Admin** | Dashboard globale con workload operatori, lista ticket con filtri avanzati, assegnazione manuale e auto-assign (operatore con meno ticket attivi), cambio stato / priorità, commenti pubblici, gestione utenti (CRUD) |
 
 ---
 
@@ -62,9 +62,9 @@ helpdesk/
     ├── home.hbs                  # homepage pubblica
     ├── partials/                 # header, footer, flash
     ├── auth/                     # login, register
-    ├── utente/                   # list, new, detail, profilo
-    ├── operatore/                # dashboard, list, ticket-detail, profilo
-    ├── admin/                    # dashboard, list, ticket-detail, utenti, utente-form, profilo
+    ├── utente/                   # list, new, detail
+    ├── operatore/                # dashboard, list, ticket-detail
+    ├── admin/                    # dashboard, list, ticket-detail, utenti, utente-form
     └── errors/                   # 404, 500
 ```
 
@@ -89,8 +89,7 @@ tickets
 
 comments
   id, ticket_id → tickets.id, user_id → users.id
-  content, is_internal (0 = pubblico · 1 = nota interna)
-  created_at
+  content, created_at
 
 status_history
   id, ticket_id → tickets.id, changed_by → users.id
@@ -137,6 +136,10 @@ Il 404 e il 500 distinguono il tipo di client:
 - Richieste API/JSON → `{ error: 'not_found' }` / `{ error: 'internal' }`
 
 Lo stack trace è mostrato nella vista 500 solo in ambiente di sviluppo (`NODE_ENV !== 'production'`).
+
+### Aggiornamento in tempo reale (AJAX Polling)
+
+Per visualizzare i cambi di stato dei ticket senza costringere l'utente a ricaricare continuamente la pagina web, è stata implementata una tecnologia AJAX. Uno script JavaScript lato client esegue un meccanismo di polling a intervalli regolari (10 secondi), inviando richieste AJAX verso l'endpoint API `/api/tickets/:id/status`. Se lo script rileva un cambio di stato, aggiorna l'intera vista ricaricandola, garantendo così la visualizzazione delle modifiche più recenti e degli eventuali nuovi commenti.
 
 ---
 
@@ -204,14 +207,12 @@ Tutti gli utenti usano la password **`password`**.
 | POST | `/tickets/:id/comments` | utente | Aggiunge commento |
 | POST | `/tickets/:id/chiudi` | utente | Chiude il ticket con valutazione |
 | POST | `/tickets/:id/riapri` | utente | Riapre un ticket chiuso |
-| GET/POST | `/profilo` | utente | Modifica profilo e password |
 | GET | `/operatore/dashboard` | operatore | Dashboard con KPI personali |
 | GET | `/operatore/tickets` | operatore | Lista ticket assegnati (filtri) |
 | GET | `/operatore/tickets/:id` | operatore | Dettaglio + azioni (stato, priorità, commenti) |
 | POST | `/operatore/tickets/:id/status` | operatore | Cambia stato (in_corso / risolto) |
 | POST | `/operatore/tickets/:id/priority` | operatore | Cambia priorità |
-| POST | `/operatore/tickets/:id/comments` | operatore | Aggiunge commento pubblico o nota interna |
-| GET/POST | `/operatore/profilo` | operatore | Modifica profilo e password |
+| POST | `/operatore/tickets/:id/comments` | operatore | Aggiunge commento pubblico |
 | GET | `/admin/dashboard` | admin | Dashboard globale + workload operatori |
 | GET | `/admin/tickets` | admin | Tutti i ticket con filtri avanzati |
 | GET | `/admin/tickets/:id` | admin | Dettaglio + assegnazione + azioni |
@@ -219,9 +220,8 @@ Tutti gli utenti usano la password **`password`**.
 | POST | `/admin/tickets/:id/auto-assign` | admin | Auto-assegna all'operatore con meno ticket |
 | POST | `/admin/tickets/:id/status` | admin | Cambia stato |
 | POST | `/admin/tickets/:id/priorita` | admin | Cambia priorità |
-| POST | `/admin/tickets/:id/commenti` | admin | Aggiunge commento / nota interna |
+| POST | `/admin/tickets/:id/commenti` | admin | Aggiunge commento |
 | GET | `/admin/utenti` | admin | Lista utenti con contatori ticket |
 | GET/POST | `/admin/utenti/nuovo` | admin | Crea nuovo utente |
 | GET/POST | `/admin/utenti/:id/modifica` | admin | Modifica utente esistente |
-| GET | `/admin/profilo` | admin | Profilo admin |
 | GET | `/api/tickets/:id/status` | utente | Polling stato ticket (JSON) |
